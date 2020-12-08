@@ -22,11 +22,3 @@ def check_index():
     # print(mat)
     header = '53 = slot 53, etc.\nA = 1, B = 2, C = 3, D = 4\n'
     np.savetxt('ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-
-
-def main():
-    check_index()
-
-
-if __name__ == '__main__':
-    main()

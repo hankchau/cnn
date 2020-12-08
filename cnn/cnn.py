@@ -7,10 +7,9 @@ dropout3 = 0.5   # dropout rate 3
 
 
 class CNN:
-    def __init__(self, id):
+    def __init__(self):
         print('building CNN model ...')
 
-        self.id = id     # id of parking slot
         input = tf.keras.Input((40,40,256), batch_size=512, name='Input')
 
         # convolutional layers
@@ -37,18 +36,6 @@ class CNN:
         # build model
         self.model = tf.keras.Model(inputs=input, outputs=output)
 
-    def summary(self):
+    def visualize(self):
         print(self.model.summary())
-
-    def plot(self):
         tf.keras.utils.plot_model(self.model, 'CNN.png')
-
-
-def main():
-    cnn = CNN(0)
-    cnn.summary()
-    cnn.plot()
-
-
-if __name__ == '__main__':
-    main()
