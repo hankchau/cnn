@@ -1,0 +1,54 @@
+import tensorflow as tf
+
+
+dropout1 = 0.5   # dropout rate 1
+dropout2 = 0.5   # dropout rate 2
+dropout3 = 0.5   # dropout rate 3
+
+
+class CNN:
+    def __init__(self, id):
+        print('building CNN model ...')
+
+        self.id = id     # id of parking slot
+        input = tf.keras.Input((40,40,256), batch_size=512, name='Input')
+
+        # convolutional layers
+        conv1 = tf.keras.layers.Conv2D(16, (3,3), padding='VALID', activation='relu', name='Conv1')(input)
+        pool1 = tf.keras.layers.MaxPooling2D((2,2), padding='SAME', name='Pool1')(conv1)
+        drop1 = tf.keras.layers.Dropout(dropout1, name='Drop1')(pool1)
+
+        conv2 = tf.keras.layers.Conv2D(16, (3,3), padding='VALID', activation='relu', name='Conv2')(drop1)
+        pool2 = tf.keras.layers.MaxPooling2D((2,2), padding='SAME', name='Pool2')(conv2)
+        drop2 = tf.keras.layers.Dropout(dropout2, name='Drop2')(pool2)
+
+        conv3 = tf.keras.layers.Conv2D(32, (3,3), padding='VALID', activation='relu', name='Conv3')(drop2)
+        pool3 = tf.keras.layers.MaxPooling2D((2,2), padding='SAME', name='Pool3')(conv3)
+
+        conv4 = tf.keras.layers.Conv2D(64, (5,5), padding='SAME', activation='relu', name='Conv4')(pool3)
+
+        # fully-connected layers
+        flat = tf.keras.layers.Flatten(name='Flat')(conv4)
+        fc1 = tf.keras.layers.Dense(20, name='FC1')(flat)
+        drop3 = tf.keras.layers.Dropout(dropout3, name='Drop3')(fc1)
+
+        output = tf.keras.layers.Dense(1, activation='softmax', name='Output')(drop3)
+
+        # build model
+        self.model = tf.keras.Model(inputs=input, outputs=output)
+
+    def summary(self):
+        print(self.model.summary())
+
+    def plot(self):
+        tf.keras.utils.plot_model(self.model, 'CNN.png')
+
+
+def main():
+    cnn = CNN(0)
+    cnn.summary()
+    cnn.plot()
+
+
+if __name__ == '__main__':
+    main()
