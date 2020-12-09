@@ -1,6 +1,5 @@
 #from cnn import CNN
-import matplotlib.pyplot as plt
-from data import get_data
+#from data import get_data
 
 
 def main():
@@ -8,7 +7,6 @@ def main():
     # data_path = 'csv_data/'
     # get_data(host, data_path)
 
-    print('hi')
     # build CNN
     # model = CNN()
     # model.visualize()

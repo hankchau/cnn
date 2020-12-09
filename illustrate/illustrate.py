@@ -18,3 +18,7 @@ def contrast_3(mat1, mat2, mat3, outpath, cmap='grayscale'):
     plt.show()
     plt.close()
     plt.savefig(outpath)
+
+
+def plot_accuracy():
+    return 0

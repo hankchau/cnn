@@ -58,8 +58,3 @@ def sample_data():
 
     denoise = mat2 - mat1
     abs_denoise = np.abs(mat2 - mat1)
-
-    print('hi')
-    # build CNN
-    # model = CNN()
-    # model.visualize()
