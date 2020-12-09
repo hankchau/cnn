@@ -1,6 +1,6 @@
 #from cnn import CNN
 import matplotlib.pyplot as plt
-from data import show_image, get_data
+from data import get_data
 
 
 def main():
