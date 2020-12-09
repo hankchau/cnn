@@ -27,6 +27,12 @@ def norm2(mat):
     return mat
 
 
+def read_csv(fpath):
+    matrix = np.genfromtxt(fpath, delimiter=',')
+
+    return matrix
+
+
 def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):
     r = requests.get(addr)
     soup = BeautifulSoup(r.text, 'html.parser')

@@ -37,12 +37,6 @@ def download_data(addr, outpath):
         get_csv(csv_links, outpath)
 
 
-def read_csv(fpath):
-    matrix = np.genfromtxt(fpath, delimiter=',')
-
-    return matrix
-
-
 def stack_training_matrix(data_path):
     return 0
 

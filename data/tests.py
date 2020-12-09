@@ -1,11 +1,14 @@
 import numpy as np
+import os
+
 from data.data_index import *
 from data import read_csv
+from illustrate import draw, contrast_2, contrast_3
 
 
 def run_all_tests():
     check_data_index()
-    sample_data()
+    run_example()
 
 
 def check_data_index():
@@ -41,20 +44,44 @@ def check_data_index():
     print('A user-friendly version with radar at the bottom has been generated too')
 
 
-def sample_data():
+def run_example():
+    outpath = 'example/sample_output/'
+    if not os.path.isdir(outpath):
+        os.mkdir(outpath)
+
     # check data
     fpath1 = 'csv_data/Basement/2020-11-21/172102_000000.csv'
-    fpath2 = 'csv_data/Basement/2020-11-25/100419_111111.csv'
-    fpath3 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
+    fpath2 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
+    fpath3 = 'csv_data/Basement/2020-11-25/100419_111111.csv'
 
     mat1 = read_csv(fpath1)
     mat2 = read_csv(fpath2)
     mat3 = read_csv(fpath3)
 
+    # compare '000000' and '111111'
+    titles = ['000000', '111111']
+    contrast_2(mat1, mat2, outpath, titles, cmap='grayscale')
+    contrast_2(mat1, mat2, outpath, titles, cmap='rainbow')
 
+    # contrast two '111111's
+    titles = ['2020-11-24/090936_111111.csv', '2020-11-25/100419_11111.csv']
+    contrast_2(mat2, mat3, outpath, titles, cmap='grayscale')
+    contrast_2(mat2, mat3, outpath, titles, cmap='rainbow')
+
+    # denoise by subtraction
+    denoise = mat2 - mat1
+    titles = ['000000', '111111', 'denoise']
+    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='grayscale')
+    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='rainbow')
+
+    denoise = np.abs(mat2 - mat1)
+    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='grayscale')
+    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='rainbow')
+
+
+    # denoise by cropping image
     mat1 = mat1[27:,:]
     mat2 = mat2[27:,:]
-    mat3 = mat3[27:,:]
-
-    denoise = mat2 - mat1
-    abs_denoise = np.abs(mat2 - mat1)
+    titles = ['before cropping', 'after cropping']
+    contrast_2(mat1, mat2, outpath, titles, cmap='grayscale')
+    contrast_2(mat1, mat2, outpath, titles, cmap='rainbow')

@@ -1,9 +1,12 @@
-from data import tests
+import data
+import illustrate
+import cnn
 
 
 def main():
     #tests.run_all_tests()
-    tests.check_data_index()
+    data.tests.check_data_index()
+    data.tests.run_example()
 
 
 if __name__ == '__main__':
