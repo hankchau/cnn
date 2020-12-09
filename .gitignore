@@ -1,0 +1,5 @@
+__pychache__
+env/
+csv_data/
+.idea
+.DS_Store
