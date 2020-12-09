@@ -1,9 +1,8 @@
-import numpy as np
 import os
+import numpy as np
 import requests
 
 from bs4 import BeautifulSoup
-from PIL import Image, ImageOps
 
 
 def get_labels(fname):
@@ -16,62 +15,16 @@ def get_time(fname):
     return 0
 
 
-def read_csv(fpath):
-    matrix = np.genfromtxt(fpath, delimiter=',')
+def norm(mat):
+    max, min = np.max(mat), np.min(mat)
+    mat = (mat - min) * (1/(max-min))
 
-    return matrix
+    return mat
 
+def norm2(mat):
+    mat /= np.max(mat)
 
-def render(matrix, mode='grayscale'):
-    max = np.max(matrix)
-    print('max = ' + str(max))
-    #matrix /= max
-    #max = np.max(matrix)
-    print('new max = ' + str(max))
-    im = Image.fromarray(matrix).convert('L')
-
-    if mode is 'grayscale':
-        #return ImageOps.grayscale(im)
-        return im
-
-    elif mode is 'heatmap':
-        return ImageOps.colorize(im, black='blue', white='red')
-
-
-def get_data(host):
-    dpath = 'csv_data/'
-    os.mkdir(dpath)
-
-    print('scraping data from host ' + host)
-    print('this will take a few hours ...')
-    # Basement
-    addr = host + '/Basement/'
-    outpath = os.path.join(dpath + 'Basement/')
-    os.mkdir(outpath)
-    download_data(addr, outpath)
-    print('finished with the Basement data')
-
-    # OffRoad
-    # addr = host + '/OffRoad/'
-    # outpath = os.path.join(dpath + 'OffRoad/')
-    # os.mkdir(outpath)
-    # download_data(addr, outpath)
-    # print('finished with the OffRoad data')
-
-    # ParaParking
-    # addr = host + '/ParaParking/'
-    # outpath = os.path.join(dpath + 'ParaParking/')
-    # os.mkdir(outpath)
-    # download_data(addr, outpath)
-    # print('finished with the ParaParking data')
-
-
-def download_data(addr, outpath):
-    date_links = get_links(addr)
-
-    for dl in date_links:
-        csv_links = get_links(dl)
-        get_csv(csv_links, outpath)
+    return mat
 
 
 def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):

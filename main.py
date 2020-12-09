@@ -1,15 +1,17 @@
-from cnn import CNN
-from data import get_data
-
+#from cnn import CNN
+import matplotlib.pyplot as plt
+from data import show_image, get_data
 
 
 def main():
     host = 'http://crs.comm.yzu.edu.tw:8888'
-    get_data(host)
+    # data_path = 'csv_data/'
+    # get_data(host, data_path)
 
+    print('hi')
     # build CNN
-    model = CNN()
-    model.visualize()
+    # model = CNN()
+    # model.visualize()
 
 
 if __name__ == '__main__':

@@ -1,2 +1,2 @@
 # Data Processing
-from data.data_utils import get_data
+from data.data import get_data, read_csv, norm
