@@ -64,30 +64,25 @@ def run_example():
     titles = ['111111', '000000']
     render(mat2, os.path.join(outpath, 'L_1.png'))
     render(mat1, os.path.join(outpath, 'L_0.png'))
-
+    contrast([mat2, mat1], os.path.join(outpath, 'gray_0_1.png'),
+               'Grayscale before denoising', titles, cmap='gray')
     contrast([mat2, mat1], os.path.join(outpath, 'rainbow_0_1.png'),
-               'CSV data before normalization', titles, cmap='rainbow')
+               'Heatmap before denoising', titles, cmap='rainbow')
 
     # denoise by subtraction
     denoise = mat2 - mat1
-    titles = ['111111', '000000', 'denoise']
+    titles = ['denoise', 'abs(denoise)']
     render(denoise, os.path.join(outpath, 'L_subtract.png'))
-    contrast([mat2, mat1, denoise], os.path.join(outpath, 'gray_subtract.png'),
+    contrast([denoise, np.abs(denoise)], os.path.join(outpath, 'gray_subtract.png'),
                'Normalization with Subtraction', titles, cmap='gray')
-    contrast([mat2, mat1, denoise], os.path.join(outpath, 'rainbow_subtract.png'),
+    contrast([denoise, np.abs(denoise)], os.path.join(outpath, 'rainbow_subtract.png'),
                'Normalization with Subtraction', titles, cmap='rainbow')
-
-    denoise = np.abs(mat2 - mat1)
-    render(denoise, os.path.join(outpath, 'Abs_L_subtract.png'))
-    contrast([mat2, mat1, denoise], os.path.join(outpath, 'gray_abs.png'),
-               'Abs Normalization with Subtraction', titles, cmap='gray')
-    contrast([mat2, mat1, denoise], os.path.join(outpath, 'rainbow_abs.png'),
-               'Abs Normalization with Subtraction', titles, cmap='rainbow')
-
 
     # denoise by cropping image
     c_mat2 = mat2[27:,:]
     titles = ['before cropping', 'after cropping']
     render(c_mat2, os.path.join(outpath, 'crop_L_1.png'))
+    contrast([mat2, c_mat2], os.path.join(outpath, 'gray_crop.png'),
+               'Normalization after cropping', titles, cmap='gray')
     contrast([mat2, c_mat2], os.path.join(outpath, 'rainbow_crop.png'),
                'Normalization after cropping', titles, cmap='rainbow')
