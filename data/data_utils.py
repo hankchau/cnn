@@ -17,7 +17,7 @@ def get_time(fname):
 
 def norm(mat):
     max, min = np.max(mat), np.min(mat)
-    mat = (mat - min) * (1/(max-min))
+    mat = (mat - min) * (255/(max-min))
 
     return mat
 

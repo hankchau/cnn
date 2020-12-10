@@ -1,9 +1,10 @@
 import numpy as np
 import os
+import shutil
 
 from data.data_index import *
-from data import read_csv
-from illustrate import draw, contrast_2, contrast_3
+from data.data_utils import read_csv
+from illustrate import render, contrast
 
 
 def run_all_tests():
@@ -46,8 +47,9 @@ def check_data_index():
 
 def run_example():
     outpath = 'example/sample_output/'
-    if not os.path.isdir(outpath):
-        os.mkdir(outpath)
+    if os.path.isdir(outpath):
+        shutil.rmtree(outpath)
+    os.mkdir(outpath)
 
     # check data
     fpath1 = 'csv_data/Basement/2020-11-21/172102_000000.csv'
@@ -58,30 +60,34 @@ def run_example():
     mat2 = read_csv(fpath2)
     mat3 = read_csv(fpath3)
 
-    # compare '000000' and '111111'
-    titles = ['000000', '111111']
-    contrast_2(mat1, mat2, outpath, titles, cmap='grayscale')
-    contrast_2(mat1, mat2, outpath, titles, cmap='rainbow')
+    # compare '111111' and '000000'
+    titles = ['111111', '000000']
+    render(mat2, os.path.join(outpath, 'L_1.png'))
+    render(mat1, os.path.join(outpath, 'L_0.png'))
 
-    # contrast two '111111's
-    titles = ['2020-11-24/090936_111111.csv', '2020-11-25/100419_11111.csv']
-    contrast_2(mat2, mat3, outpath, titles, cmap='grayscale')
-    contrast_2(mat2, mat3, outpath, titles, cmap='rainbow')
+    contrast([mat2, mat1], os.path.join(outpath, 'rainbow_0_1.png'),
+               'CSV data before normalization', titles, cmap='rainbow')
 
     # denoise by subtraction
     denoise = mat2 - mat1
-    titles = ['000000', '111111', 'denoise']
-    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='grayscale')
-    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='rainbow')
+    titles = ['111111', '000000', 'denoise']
+    render(denoise, os.path.join(outpath, 'L_subtract.png'))
+    contrast([mat2, mat1, denoise], os.path.join(outpath, 'gray_subtract.png'),
+               'Normalization with Subtraction', titles, cmap='gray')
+    contrast([mat2, mat1, denoise], os.path.join(outpath, 'rainbow_subtract.png'),
+               'Normalization with Subtraction', titles, cmap='rainbow')
 
     denoise = np.abs(mat2 - mat1)
-    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='grayscale')
-    contrast_3(mat1, mat2, denoise, outpath, titles, cmap='rainbow')
+    render(denoise, os.path.join(outpath, 'Abs_L_subtract.png'))
+    contrast([mat2, mat1, denoise], os.path.join(outpath, 'gray_abs.png'),
+               'Abs Normalization with Subtraction', titles, cmap='gray')
+    contrast([mat2, mat1, denoise], os.path.join(outpath, 'rainbow_abs.png'),
+               'Abs Normalization with Subtraction', titles, cmap='rainbow')
 
 
     # denoise by cropping image
-    mat1 = mat1[27:,:]
-    mat2 = mat2[27:,:]
+    c_mat2 = mat2[27:,:]
     titles = ['before cropping', 'after cropping']
-    contrast_2(mat1, mat2, outpath, titles, cmap='grayscale')
-    contrast_2(mat1, mat2, outpath, titles, cmap='rainbow')
+    render(c_mat2, os.path.join(outpath, 'crop_L_1.png'))
+    contrast([mat2, c_mat2], os.path.join(outpath, 'rainbow_crop.png'),
+               'Normalization after cropping', titles, cmap='rainbow')
