@@ -44,36 +44,33 @@ def check_data_index():
 
 
 def plot_data_index():
-    h, w = 64, 48
-    mat = np.zeros((h,w), dtype=int)
     indices = [53, 54, 55, 56, 57, 58, 1, 2, 3, 4]
     slots = [data.s53, data.s54, data.s55, data.s56, data.s57, data.s58,
              data.A, data.B, data.C, data.D]
+
+    # define padded matrix
+    h, w = 64, 48
+    mat = np.zeros((h,w), dtype=int)
+    mat = np.pad(mat, ((0,0), (0,51)), mode='constant', constant_values=(0,))
 
     x, y = data.transform()
     # translate x,y coord to 1st quadrant
     x += abs(x.min())
     y += abs(y.min())
 
-    num_ocpd = 0
+    dupes = 0
     index = 0
     for s in slots:
         for m, n in s:
             new_m = int(round(x[m, n]))
             new_n = int(round(y[m, n]))
+            if mat[new_n, new_m] is not 0:
+                dupes += 1
             mat[new_n, new_m] = indices[index]
-            num_ocpd += 1
         index += 1
-
-    header = 'ROI: 53 = slot 53, etc.\nA = 1, B = 2, C = 3, D = 4, 0 = None\n'
-    header += 'Number of pixels covered:\n53: %i, 54: %i, 55: %i, 56: %i, 57: %i, 58: %i\n' % (
-        len(data.s53), len(data.s54), len(data.s55), len(data.s56), len(data.s57), len(data.s58)
-    )
-    header += '1: %i, 2: %i, 3: %i, 4: %i, 0: %i\n\n' % (
-        len(data.A), len(data.B), len(data.C), len(data.D), 64 * 48 - num_ocpd)
-
-    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d', header=header)
+    print(str(dupes))
+    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d')
+    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d')
 
     print('Generating area distributions of ROIs and other zones ...')
     print('"Post_ROI_and_Area_Distributions.txt" can be found under data/')

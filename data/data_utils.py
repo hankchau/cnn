@@ -25,7 +25,7 @@ def normalize(mat, range):
 
 
 def transform():
-    range_bins, range_scale = 64 - 1, 63
+    range_bins, range_scale = 64 - 1, 54.16
     angle_bins, angle_width = 48 - 1, 60.0
 
     # initialize mat index arrays
@@ -34,7 +34,7 @@ def transform():
 
     # transform to sector coord
     r = range_scale/range_bins * n
-    beta = 2 * angle_width/angle_bins     # angle ranges from 150 - 30 degrees
+    beta = 2 * angle_width/angle_bins     # angle ranges from -60 ~ 60 degrees
 
     t = -angle_width + (beta * m)
     t = np.radians(t)
