@@ -1,5 +1,5 @@
 import os
-from data.data import norm
+from data.data import normalize
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 
@@ -19,6 +19,11 @@ def contrast(mats, outpath, suptitle, titles, cmap='gray'):
         subplots[i].set_title(titles[i])
 
     plt.savefig(outpath)
+
+
+def plot_heatmap(mat):
+    fig = plt.figure(figsize=(6,6))
+    ax = plt.subplot(1,1,1)
 
 
 def plot_accuracy():

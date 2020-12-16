@@ -1,47 +1,82 @@
 import numpy as np
+import scipy as spi
 import os
 import shutil
 
-from data.data_index import *
-from data.data_utils import read_csv
+import data
 from illustrate import render, contrast
 
 
 def run_all_tests():
     check_data_index()
     run_example()
+    data_prep()
 
 
 def check_data_index():
-    print('53, 54, 55, 56, 57, 58 : ')
-    print(len(s53), len(s54), len(s54), len(s55), len(s56), len(s57), len(s58))
-
-    height = 64
-    width = 48
-    mat = np.zeros((height, width), dtype=int)
+    h, w = 64, 48
+    mat = np.zeros((h, w), dtype=int)
     indices = [53, 54, 55, 56, 57, 58, 1, 2, 3, 4]
-    slots = [s53, s54, s55, s56, s57, s58, A, B, C, D]
+    slots = [data.s53, data.s54, data.s55, data.s56, data.s57, data.s58,
+             data.A, data.B, data.C, data.D]
 
     num_ocpd = 0    # number of pixels occupied
     index = 0
     for s in slots:
-        for h, w in s:
-            mat[w, h] = indices[index]
+        for m, n in s:
+            mat[n, m] = indices[index]
             num_ocpd += 1
         index += 1
 
     header = 'ROI: 53 = slot 53, etc.\nA = 1, B = 2, C = 3, D = 4, 0 = None\n'
     header += 'Number of pixels covered:\n53: %i, 54: %i, 55: %i, 56: %i, 57: %i, 58: %i\n' % (
-        len(s53), len(s54), len(s55), len(s56), len(s57), len(s58)
+        len(data.s53), len(data.s54), len(data.s55), len(data.s56), len(data.s57), len(data.s58)
     )
     header += '1: %i, 2: %i, 3: %i, 4: %i, 0: %i\n\n' % (
-        len(A), len(B), len(C), len(D), 64*48-num_ocpd)
+        len(data.A), len(data.B), len(data.C), len(data.D), 64*48-num_ocpd)
 
     np.savetxt('data/ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
     np.savetxt('data/(BottomRadar)ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d', header=header)
 
     print('Generating area distributions of ROIs and other zones ...')
     print('"ROI_and_Area_Distributions.txt" can be found under data/')
+    print('A user-friendly version with radar at the bottom has been generated too')
+
+
+def plot_data_index():
+    h, w = 64, 48
+    mat = np.zeros((h,w), dtype=int)
+    indices = [53, 54, 55, 56, 57, 58, 1, 2, 3, 4]
+    slots = [data.s53, data.s54, data.s55, data.s56, data.s57, data.s58,
+             data.A, data.B, data.C, data.D]
+
+    x, y = data.transform()
+    # translate x,y coord to 1st quadrant
+    x += abs(x.min())
+    y += abs(y.min())
+
+    num_ocpd = 0
+    index = 0
+    for s in slots:
+        for m, n in s:
+            new_m = int(round(x[m, n]))
+            new_n = int(round(y[m, n]))
+            mat[new_n, new_m] = indices[index]
+            num_ocpd += 1
+        index += 1
+
+    header = 'ROI: 53 = slot 53, etc.\nA = 1, B = 2, C = 3, D = 4, 0 = None\n'
+    header += 'Number of pixels covered:\n53: %i, 54: %i, 55: %i, 56: %i, 57: %i, 58: %i\n' % (
+        len(data.s53), len(data.s54), len(data.s55), len(data.s56), len(data.s57), len(data.s58)
+    )
+    header += '1: %i, 2: %i, 3: %i, 4: %i, 0: %i\n\n' % (
+        len(data.A), len(data.B), len(data.C), len(data.D), 64 * 48 - num_ocpd)
+
+    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
+    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d', header=header)
+
+    print('Generating area distributions of ROIs and other zones ...')
+    print('"Post_ROI_and_Area_Distributions.txt" can be found under data/')
     print('A user-friendly version with radar at the bottom has been generated too')
 
 
@@ -56,9 +91,8 @@ def run_example():
     fpath2 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
     fpath3 = 'csv_data/Basement/2020-11-25/100419_111111.csv'
 
-    mat1 = read_csv(fpath1)
-    mat2 = read_csv(fpath2)
-    mat3 = read_csv(fpath3)
+    mat1 = data.read_csv(fpath1)
+    mat2 = data.read_csv(fpath2)
 
     # compare '111111' and '000000'
     titles = ['111111', '000000']
@@ -86,3 +120,22 @@ def run_example():
                'Normalization after cropping', titles, cmap='gray')
     contrast([mat2, c_mat2], os.path.join(outpath, 'rainbow_crop.png'),
                'Normalization after cropping', titles, cmap='rainbow')
+
+
+def data_prep():
+    slots = ['53', '54', '55', '56', '57', '58']
+    x, y = data.stack_training_data('csv_data')
+    uniq, freq = np.unique(y, return_counts=True, axis=1)
+    ones = list(np.sum(y, axis=1))
+    n = freq.shape[0]
+    with open('labels_distributions.txt', 'w+') as f:
+        f.write('Total : ' + str(n))
+        for i in range(len(ones)):
+            f.write(slots[i] + ' : ' + str(ones[i]) + '\n')
+
+        for i in range(n):
+            labels = uniq[:,i]
+            labels = list(labels.astype(str))
+            labels = ''.join(labels)
+            count = freq[i]
+            f.write(str(labels) + ' : ' + str(count) + '\n')

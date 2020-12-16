@@ -6,7 +6,7 @@ dropout2 = 0.5   # dropout rate 2
 dropout3 = 0.5   # dropout rate 3
 
 
-class CNN:
+class CNN_paper:
     def __init__(self):
         print('building CNN model ...')
 
@@ -39,3 +39,28 @@ class CNN:
     def visualize(self):
         print(self.model.summary())
         tf.keras.utils.plot_model(self.model, 'CNN.png')
+
+
+class CNN_all():
+    def __init__(self):
+        input = tf.keras.Input()
+
+
+
+        output = tf.keras.layers.Dense(6, activation='softmax', name='Output')()
+        self.model = tf.keras.Model(inputs=input, outputs=output)
+
+    def visualize(self):
+        print(self.model.summary())
+
+
+class FullyConnected():
+    def __init__(self):
+        input = tf.keras.Input()
+
+
+        output = tf.keras.layers.Dense(6, activation='softmax', name='Output')
+        self.model = tf.keras.Model(inputs=input, outputs=output)
+
+    def visualize(self):
+        print(self.model.summary())
