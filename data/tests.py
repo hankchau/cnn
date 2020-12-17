@@ -4,7 +4,7 @@ import os
 import shutil
 
 import data
-from illustrate import render, contrast
+from illustrate import render, contrast, plot_heatmap
 
 
 def run_all_tests():
@@ -36,7 +36,8 @@ def check_data_index():
         len(data.A), len(data.B), len(data.C), len(data.D), 64*48-num_ocpd)
 
     np.savetxt('data/ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-    np.savetxt('data/(BottomRadar)ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d', header=header)
+    np.savetxt('data/(BottomRadar)ROI_and_Area_Distributions.txt',
+               np.flipud(mat), fmt='%2.d', header=header)
 
     print('Generating area distributions of ROIs and other zones ...')
     print('"ROI_and_Area_Distributions.txt" can be found under data/')
@@ -51,30 +52,54 @@ def plot_data_index():
     # define padded matrix
     h, w = 64, 48
     mat = np.zeros((h,w), dtype=int)
-    mat = np.pad(mat, ((0,0), (0,51)), mode='constant', constant_values=(0,))
+    mat = np.pad(mat, ((0,0), (25,25)), mode='constant', constant_values=(0,))
 
-    x, y = data.transform()
+    x, y, _, _ = data.transform()
     # translate x,y coord to 1st quadrant
     x += abs(x.min())
-    y += abs(y.min())
+    #y += abs(y.min())
 
+    roi_dict = {}
     dupes = 0
     index = 0
     for s in slots:
+        num_ocpd = 0
         for m, n in s:
-            new_m = int(round(x[m, n]))
-            new_n = int(round(y[m, n]))
-            if mat[new_n, new_m] is not 0:
+            new_m = int(round(x[n, m]))
+            new_n = int(round(y[n, m]))
+
+            if mat[new_n, new_m] != 0:
                 dupes += 1
+                continue
+
             mat[new_n, new_m] = indices[index]
+            num_ocpd += 1
+        roi_id = str(indices[index])
+        roi_dict[roi_id] = num_ocpd
+
         index += 1
-    print(str(dupes))
-    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d')
-    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt', np.flipud(mat), fmt='%2.d')
+    header = 'Total Overlapped Pixels: %i\nNumber of pixels covered:\n' % (dupes)
+    for id in roi_dict:
+        header += (id + ': %i, ' % (roi_dict[id]))
+    header += '\n'
+    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
+    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt',
+               np.flipud(mat), fmt='%2.d', header=header)
 
     print('Generating area distributions of ROIs and other zones ...')
     print('"Post_ROI_and_Area_Distributions.txt" can be found under data/')
     print('A user-friendly version with radar at the bottom has been generated too')
+
+
+def plot_sample_heatmap():
+    fpath1 = 'csv_data/Basement/2020-11-21/172102_000000.csv'
+    fpath2 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
+    mat1 = data.read_csv(fpath1)
+    plot_heatmap(mat1)
+
+    mat2 = data.read_csv(fpath2)
+    plot_heatmap(mat2)
+
 
 
 def run_example():

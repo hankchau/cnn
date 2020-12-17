@@ -6,7 +6,8 @@ import illustrate
 def main():
     #tests.run_all_tests()
     #data.tests.check_data_index()
-    data.tests.plot_data_index()
+    #data.tests.plot_data_index()
+    data.tests.plot_sample_heatmap()
 
     #data.tests.data_prep()
 

@@ -29,8 +29,8 @@ def transform():
     angle_bins, angle_width = 48 - 1, 60.0
 
     # initialize mat index arrays
-    m = np.arange(range_bins + 1).reshape((1,-1))
-    n = np.arange(angle_bins + 1).reshape((1,-1))
+    n = np.arange(range_bins + 1).reshape((1,-1))
+    m = np.arange(angle_bins + 1).reshape((1,-1))
 
     # transform to sector coord
     r = range_scale/range_bins * n
@@ -42,7 +42,11 @@ def transform():
     x = np.matmul(r.T, np.sin(t))
     y = np.matmul(r.T, np.cos(t))
 
-    return x, y
+    xi = np.linspace(-angle_width, angle_width, 480)
+    yi = np.linspace(0, 12.8, 640)
+    xi, yi = np.meshgrid(xi, yi)
+
+    return x, y, xi, yi
 
 
 def read_csv(fpath):

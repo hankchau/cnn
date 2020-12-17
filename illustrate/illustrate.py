@@ -1,5 +1,6 @@
 import os
-from data.data import normalize
+from scipy.interpolate import griddata
+import data
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 
@@ -22,8 +23,15 @@ def contrast(mats, outpath, suptitle, titles, cmap='gray'):
 
 
 def plot_heatmap(mat):
-    fig = plt.figure(figsize=(6,6))
-    ax = plt.subplot(1,1,1)
+    plt.figure(figsize=(12, 6, ))
+    plt.title('Range Azimuth Heatmap')
+    plt.xlabel('Azimuth(-60, 60)')
+    plt.ylabel('Range(m)')
+    plt.show()
+    plt.close()
+    x, y, xi, yi = data.transform()
+    zi = griddata((x.ravel(), y.ravel()), mat.ravel(), (xi, yi))
+    plt.imshow(zi.T, cmap='rainbow', extent=(0, 12.8, -60.0, 60.0), origin='lower')
 
 
 def plot_accuracy():
