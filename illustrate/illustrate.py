@@ -1,8 +1,10 @@
 import os
-from scipy.interpolate import griddata
+import numpy as np
+from math import sin, cos, radians
 import data
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
+import matplotlib.patches as pat
 
 
 def render(mat, outpath):
@@ -23,15 +25,32 @@ def contrast(mats, outpath, suptitle, titles, cmap='gray'):
 
 
 def plot_heatmap(mat):
-    plt.figure(figsize=(12, 6, ))
-    plt.title('Range Azimuth Heatmap')
-    plt.xlabel('Azimuth(-60, 60)')
-    plt.ylabel('Range(m)')
+    range_depth = 12.8
+    y_lim = +cos(radians(60)) * range_depth
+    range_width = +sin(radians(60)) * range_depth
+
+    x, y = data.get_transform_index()
+    #x, y, mat = x.ravel(), y.ravel(), mat.ravel()
+    zi = data.interpolate(mat)
+
+    # matplotlib
+    plt.figure(figsize=(10,6))
+    ax = plt.subplot(1,1,1)
+    #ax.imshow(mat, cmap='rainbow',
+              #extent=[-range_width, +range_width, 0, range_depth],
+              #alpha=0.95)
+    ax.pcolormesh(x, y, mat, cmap='rainbow')
+    #ax.scatter(x, y, mat)
+    ax.set_title('Range Azimuth Heatmap (-60, 60)')
+    ax.set_xlabel('Azimuth [m]')
+    ax.set_ylabel('Range [m]')
+    ax.set_xlim([-range_width - 0.5, range_width + 0.5])
+    ax.set_ylim([0, range_depth + 0.5])
+    ax.plot([0, -range_width], [0, +y_lim], color='black', linewidth=0.5, linestyle=':', zorder=1)
+    ax.plot([0, +range_width], [0, +y_lim], color='black', linewidth=0.5, linestyle=':', zorder=1)
     plt.show()
+    plt.savefig('Heatmap.png')
     plt.close()
-    x, y, xi, yi = data.transform()
-    zi = griddata((x.ravel(), y.ravel()), mat.ravel(), (xi, yi))
-    plt.imshow(zi.T, cmap='rainbow', extent=(0, 12.8, -60.0, 60.0), origin='lower')
 
 
 def plot_accuracy():

@@ -2,7 +2,8 @@ import os
 import math
 import numpy as np
 import requests
-
+import data
+from scipy.interpolate import griddata
 from bs4 import BeautifulSoup
 
 
@@ -24,8 +25,9 @@ def normalize(mat, range):
     return mat
 
 
-def transform():
-    range_bins, range_scale = 64 - 1, 54.16
+def get_transform_index():
+    # range_scale = 54.16(area), 69.28(fit)
+    range_bins, range_scale = 64 - 1, 12.8
     angle_bins, angle_width = 48 - 1, 60.0
 
     # initialize mat index arrays
@@ -42,17 +44,35 @@ def transform():
     x = np.matmul(r.T, np.sin(t))
     y = np.matmul(r.T, np.cos(t))
 
-    xi = np.linspace(-angle_width, angle_width, 480)
-    yi = np.linspace(0, 12.8, 640)
-    xi, yi = np.meshgrid(xi, yi)
+    return x, y
 
-    return x, y, xi, yi
+
+def func(x, y):
+    return x*(1-x)*np.cos(4*np.pi*x) * np.sin(4*np.pi*y**2)**2
+
+def interpolate(mat):
+    x, y = data.get_transform_index()
+    grid_x, grid_y = np.mgrid[0:1:100j, 0:1:200j]
+    grid_x, grid_y = np.mgrid[0:12.8:480j, -60:60:640j]
+    points = np.random.rand(1000, 2)
+    points = np.array([x.ravel(), y.ravel()]).T
+    values = func(points[:, 0], points[:, 1])
+    values = mat.ravel()
+    zi = griddata(points, values, (grid_x, grid_y), method='nearest')
+
+    return zi
+
+
+def fill_data_index(fpath):
+    mat = np.genfromtxt(fpath, delimiter=',')
+
+    slots = [53, 54, 55, 56, 57, 58, -1, -2, -3, -4]
+    for id in slots:
+        data.data_index[str(id)] = np.where(mat == id)
 
 
 def read_csv(fpath):
-    matrix = np.genfromtxt(fpath, delimiter=',')
-
-    return matrix
+    return np.genfromtxt(fpath, delimiter=',')
 
 
 def crop_matrix(mat, index, axis=0):

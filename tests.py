@@ -4,8 +4,8 @@ import illustrate
 
 
 def main():
+    data.tests.test_prep()
     #tests.run_all_tests()
-    #data.tests.check_data_index()
     #data.tests.plot_data_index()
     data.tests.plot_sample_heatmap()
 

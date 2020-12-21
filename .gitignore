@@ -1,5 +1,7 @@
-__pychache__
+__pycache__
 env/
+.env/
 csv_data/
 .idea
 .DS_Store
+**/__pycache__

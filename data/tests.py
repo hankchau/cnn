@@ -8,82 +8,56 @@ from illustrate import render, contrast, plot_heatmap
 
 
 def run_all_tests():
-    check_data_index()
+    test_prep()
     run_example()
     data_prep()
 
 
-def check_data_index():
-    h, w = 64, 48
-    mat = np.zeros((h, w), dtype=int)
-    indices = [53, 54, 55, 56, 57, 58, 1, 2, 3, 4]
-    slots = [data.s53, data.s54, data.s55, data.s56, data.s57, data.s58,
-             data.A, data.B, data.C, data.D]
-
-    num_ocpd = 0    # number of pixels occupied
-    index = 0
-    for s in slots:
-        for m, n in s:
-            mat[n, m] = indices[index]
-            num_ocpd += 1
-        index += 1
-
-    header = 'ROI: 53 = slot 53, etc.\nA = 1, B = 2, C = 3, D = 4, 0 = None\n'
-    header += 'Number of pixels covered:\n53: %i, 54: %i, 55: %i, 56: %i, 57: %i, 58: %i\n' % (
-        len(data.s53), len(data.s54), len(data.s55), len(data.s56), len(data.s57), len(data.s58)
-    )
-    header += '1: %i, 2: %i, 3: %i, 4: %i, 0: %i\n\n' % (
-        len(data.A), len(data.B), len(data.C), len(data.D), 64*48-num_ocpd)
-
-    np.savetxt('data/ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-    np.savetxt('data/(BottomRadar)ROI_and_Area_Distributions.txt',
-               np.flipud(mat), fmt='%2.d', header=header)
-
-    print('Generating area distributions of ROIs and other zones ...')
-    print('"ROI_and_Area_Distributions.txt" can be found under data/')
-    print('A user-friendly version with radar at the bottom has been generated too')
+def test_prep():
+    data.fill_data_index('data/data_index.csv')
 
 
 def plot_data_index():
-    indices = [53, 54, 55, 56, 57, 58, 1, 2, 3, 4]
-    slots = [data.s53, data.s54, data.s55, data.s56, data.s57, data.s58,
-             data.A, data.B, data.C, data.D]
+    slots = [53, 54, 55, 56, 57, 58, -1, -2, -3, -4]
 
     # define padded matrix
     h, w = 64, 48
     mat = np.zeros((h,w), dtype=int)
-    mat = np.pad(mat, ((0,0), (25,25)), mode='constant', constant_values=(0,))
+    #mat = np.pad(mat, ((0,0), (25,25)), mode='constant', constant_values=(0,))
+    mat = np.pad(mat, ((3,3), (37,37)), mode='constant', constant_values=(0,))
 
-    x, y, _, _ = data.transform()
+    x, y = data.get_transform_index()
     # translate x,y coord to 1st quadrant
     x += abs(x.min())
     #y += abs(y.min())
 
     roi_dict = {}
     dupes = 0
-    index = 0
     for s in slots:
         num_ocpd = 0
-        for m, n in s:
-            new_m = int(round(x[n, m]))
+        row_id = data.data_index[str(s)][0]
+        col_id = data.data_index[str(s)][1]
+        for i in range(len(row_id)):
+            n = row_id[i]
+            m = col_id[i]
             new_n = int(round(y[n, m]))
+            new_m = int(round(x[n, m]))
 
             if mat[new_n, new_m] != 0:
                 dupes += 1
                 continue
 
-            mat[new_n, new_m] = indices[index]
+            mat[new_n, new_m] = s
             num_ocpd += 1
-        roi_id = str(indices[index])
+        roi_id = str(s)
         roi_dict[roi_id] = num_ocpd
 
-        index += 1
     header = 'Total Overlapped Pixels: %i\nNumber of pixels covered:\n' % (dupes)
     for id in roi_dict:
         header += (id + ': %i, ' % (roi_dict[id]))
     header += '\n'
-    np.savetxt('data/Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-    np.savetxt('data/(BottomRadar)Post_ROI_and_Area_Distributions.txt',
+    np.savetxt('Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
+    np.savetxt('(BottomRadar)Post_ROI_and_Area_Distributions.txt',
                np.flipud(mat), fmt='%2.d', header=header)
 
     print('Generating area distributions of ROIs and other zones ...')
@@ -92,14 +66,16 @@ def plot_data_index():
 
 
 def plot_sample_heatmap():
-    fpath1 = 'csv_data/Basement/2020-11-21/172102_000000.csv'
-    fpath2 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
+    fpath1 = 'csv_data/Basement/2020-11-23/000012_000000.csv'
+    fpath2 = 'csv_data/Basement/2020-11-24/084934_111110.csv'
+    fpath3 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
     mat1 = data.read_csv(fpath1)
-    plot_heatmap(mat1)
-
     mat2 = data.read_csv(fpath2)
-    plot_heatmap(mat2)
-
+    mat3 = data.read_csv(fpath3)
+    #plot_heatmap(mat1)
+    #plot_heatmap(mat2)
+    #plot_heatmap(mat3-mat1)
+    plot_heatmap(mat2-mat1)
 
 
 def run_example():
@@ -111,7 +87,6 @@ def run_example():
     # check data
     fpath1 = 'csv_data/Basement/2020-11-21/172102_000000.csv'
     fpath2 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
-    fpath3 = 'csv_data/Basement/2020-11-25/100419_111111.csv'
 
     mat1 = data.read_csv(fpath1)
     mat2 = data.read_csv(fpath2)

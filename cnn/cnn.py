@@ -57,9 +57,9 @@ class CNN_all():
 class FullyConnected():
     def __init__(self):
         input = tf.keras.Input()
-
-
-        output = tf.keras.layers.Dense(6, activation='softmax', name='Output')
+        fc1 = tf.keras.layers.Dense(10)(input)
+        # fc2 = tf.keras.layers.Dense()
+        output = tf.keras.layers.Dense(1, activation='softmax', name='Output')(fc1)
         self.model = tf.keras.Model(inputs=input, outputs=output)
 
     def visualize(self):
