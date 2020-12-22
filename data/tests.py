@@ -66,16 +66,30 @@ def plot_data_index():
 
 
 def plot_sample_heatmap():
+    file_pattern = 'csv_data/Basement/**/*_000000.csv'
+    #mat0 = data.find_average(file_pattern)
+    #np.savetxt("avg_000000.csv", mat0, delimiter=",")
+    mat0 = data.read_csv('avg_000000.csv')
+
     fpath1 = 'csv_data/Basement/2020-11-23/000012_000000.csv'
     fpath2 = 'csv_data/Basement/2020-11-24/084934_111110.csv'
     fpath3 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
     mat1 = data.read_csv(fpath1)
     mat2 = data.read_csv(fpath2)
     mat3 = data.read_csv(fpath3)
-    #plot_heatmap(mat1)
-    #plot_heatmap(mat2)
-    #plot_heatmap(mat3-mat1)
-    plot_heatmap(mat2-mat1)
+
+    #mat1[mat1 > 2500.0] = 0
+    mat1[:30,] = np.median(mat1)
+    mat2[:30,] = np.median(mat2)
+    mat3[:30,] = np.median(mat3)
+    dn = mat3 - mat0
+    #dn = np.abs(dn)
+    plot_heatmap(mat0, 'Heatmap_Avg_000000.png')
+    plot_heatmap(mat1, 'Heatmap_000000.png')
+    plot_heatmap(mat2, 'Heatmap_111110.png')
+    plot_heatmap(mat3, 'Heatmap_111111.png')
+    plot_heatmap(dn, 'Heatmap_Denoise_111111.png')
+    #plot_heatmap(mat2-mat1)
 
 
 def run_example():

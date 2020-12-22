@@ -47,22 +47,6 @@ def get_transform_index():
     return x, y
 
 
-def func(x, y):
-    return x*(1-x)*np.cos(4*np.pi*x) * np.sin(4*np.pi*y**2)**2
-
-def interpolate(mat):
-    x, y = data.get_transform_index()
-    grid_x, grid_y = np.mgrid[0:1:100j, 0:1:200j]
-    grid_x, grid_y = np.mgrid[0:12.8:480j, -60:60:640j]
-    points = np.random.rand(1000, 2)
-    points = np.array([x.ravel(), y.ravel()]).T
-    values = func(points[:, 0], points[:, 1])
-    values = mat.ravel()
-    zi = griddata(points, values, (grid_x, grid_y), method='nearest')
-
-    return zi
-
-
 def fill_data_index(fpath):
     mat = np.genfromtxt(fpath, delimiter=',')
 

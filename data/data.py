@@ -53,6 +53,16 @@ def download_data(addr, outpath):
     return paths
 
 
+def find_average(file_pattern):
+    mat = np.zeros((64,48))
+    num = 0
+    for f in glob.glob(file_pattern):
+        mat += read_csv(f)
+        num += 1
+
+    return mat / num
+
+
 def stack_training_data(data_dir):
     data_dir = os.path.join(data_dir, '**/**/*.csv')
     fpaths = glob.glob(data_dir, recursive=True)
