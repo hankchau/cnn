@@ -9,8 +9,6 @@ def main():
     #data.tests.plot_data_index()
     data.tests.plot_sample_heatmap()
 
-    #data.tests.data_prep()
-
 
 if __name__ == '__main__':
     main()

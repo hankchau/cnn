@@ -7,6 +7,9 @@ def main():
     # data_path = 'csv_data/'
     # get_data(host, data_path)
 
+    # data.find_label_distr()
+
+
     # build CNN
     # model = CNN()
     # model.visualize()

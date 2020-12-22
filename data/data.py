@@ -63,6 +63,25 @@ def find_average(file_pattern):
     return mat / num
 
 
+def find_label_distr():
+    slots = ['53', '54', '55', '56', '57', '58']
+    x, y = data.stack_training_data('csv_data')
+    uniq, freq = np.unique(y, return_counts=True, axis=1)
+    ones = list(np.sum(y, axis=1))
+    n = freq.shape[0]
+    with open('labels_distributions.txt', 'w+') as f:
+        f.write('Total : ' + str(n))
+        for i in range(len(ones)):
+            f.write(slots[i] + ' : ' + str(ones[i]) + '\n')
+
+        for i in range(n):
+            labels = uniq[:,i]
+            labels = list(labels.astype(str))
+            labels = ''.join(labels)
+            count = freq[i]
+            f.write(str(labels) + ' : ' + str(count) + '\n')
+
+
 def stack_training_data(data_dir):
     data_dir = os.path.join(data_dir, '**/**/*.csv')
     fpaths = glob.glob(data_dir, recursive=True)

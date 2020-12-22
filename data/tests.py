@@ -10,7 +10,6 @@ from illustrate import render, contrast, plot_heatmap
 def run_all_tests():
     test_prep()
     run_example()
-    data_prep()
 
 
 def test_prep():
@@ -18,12 +17,15 @@ def test_prep():
 
 
 def plot_data_index():
+    path = 'example/sample_output/'
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
     slots = [53, 54, 55, 56, 57, 58, -1, -2, -3, -4]
 
     # define padded matrix
     h, w = 64, 48
     mat = np.zeros((h,w), dtype=int)
-    #mat = np.pad(mat, ((0,0), (25,25)), mode='constant', constant_values=(0,))
     mat = np.pad(mat, ((3,3), (37,37)), mode='constant', constant_values=(0,))
 
     x, y = data.get_transform_index()
@@ -56,16 +58,18 @@ def plot_data_index():
     for id in roi_dict:
         header += (id + ': %i, ' % (roi_dict[id]))
     header += '\n'
-    np.savetxt('Post_ROI_and_Area_Distributions.txt', mat, fmt='%2.d', header=header)
-    np.savetxt('(BottomRadar)Post_ROI_and_Area_Distributions.txt',
+    np.savetxt(os.path.join(path, 'Pixel_Distr.txt'),
                np.flipud(mat), fmt='%2.d', header=header)
 
     print('Generating area distributions of ROIs and other zones ...')
-    print('"Post_ROI_and_Area_Distributions.txt" can be found under data/')
-    print('A user-friendly version with radar at the bottom has been generated too')
+    print('"Pixel_Distr.txt" can be found under example/sample_output')
 
 
 def plot_sample_heatmap():
+    path = 'example/sample_output/'
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
     file_pattern = 'csv_data/Basement/**/*_000000.csv'
     #mat0 = data.find_average(file_pattern)
     #np.savetxt("avg_000000.csv", mat0, delimiter=",")
@@ -93,6 +97,7 @@ def plot_sample_heatmap():
 
 
 def run_example():
+    '''Plots some csv data sample files.'''
     outpath = 'example/sample_output/'
     if os.path.isdir(outpath):
         shutil.rmtree(outpath)
@@ -131,22 +136,3 @@ def run_example():
                'Normalization after cropping', titles, cmap='gray')
     contrast([mat2, c_mat2], os.path.join(outpath, 'rainbow_crop.png'),
                'Normalization after cropping', titles, cmap='rainbow')
-
-
-def data_prep():
-    slots = ['53', '54', '55', '56', '57', '58']
-    x, y = data.stack_training_data('csv_data')
-    uniq, freq = np.unique(y, return_counts=True, axis=1)
-    ones = list(np.sum(y, axis=1))
-    n = freq.shape[0]
-    with open('labels_distributions.txt', 'w+') as f:
-        f.write('Total : ' + str(n))
-        for i in range(len(ones)):
-            f.write(slots[i] + ' : ' + str(ones[i]) + '\n')
-
-        for i in range(n):
-            labels = uniq[:,i]
-            labels = list(labels.astype(str))
-            labels = ''.join(labels)
-            count = freq[i]
-            f.write(str(labels) + ' : ' + str(count) + '\n')
