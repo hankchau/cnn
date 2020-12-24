@@ -12,7 +12,7 @@ def run_all_tests():
 
 
 def test_prep():
-    data.fill_data_index('data/data_index.csv')
+    data.fill_data_index('data/areaMask.csv')
 
 
 def plot_data_index():
