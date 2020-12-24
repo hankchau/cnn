@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import itertools
 import glob
 from data.data_utils import *
 
@@ -54,9 +55,13 @@ def download_data(addr, outpath):
 
 
 def find_average(file_pattern):
+    fpaths = glob.glob(file_pattern)
+    if len(fpaths) == 0:
+        return np.array([])
+
     mat = np.zeros((64,48))
     num = 0
-    for f in glob.glob(file_pattern):
+    for f in fpaths:
         mat += read_csv(f)
         num += 1
 
@@ -64,22 +69,18 @@ def find_average(file_pattern):
 
 
 def find_label_distr():
-    slots = ['53', '54', '55', '56', '57', '58']
-    x, y = data.stack_training_data('csv_data')
-    uniq, freq = np.unique(y, return_counts=True, axis=1)
-    ones = list(np.sum(y, axis=1))
-    n = freq.shape[0]
-    with open('labels_distributions.txt', 'w+') as f:
-        f.write('Total : ' + str(n))
-        for i in range(len(ones)):
-            f.write(slots[i] + ' : ' + str(ones[i]) + '\n')
+    # find all possible label states
+    labels = []
+    bins = itertools.product('01', repeat=6)
+    for b in bins:
+        labels.append(''.join(b))
 
-        for i in range(n):
-            labels = uniq[:,i]
-            labels = list(labels.astype(str))
-            labels = ''.join(labels)
-            count = freq[i]
-            f.write(str(labels) + ' : ' + str(count) + '\n')
+    with open('label_distributions.txt', 'w+') as f:
+        f.write('label  : frequency\n')
+
+        for l in labels:
+            ls = glob.glob('csv_data/Basement/**/*_' + l + '.csv')
+            f.write(l + ' : %i\n' % len(ls))
 
 
 def stack_training_data(data_dir):

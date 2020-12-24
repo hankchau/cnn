@@ -1,15 +1,14 @@
-import numpy as np
-import scipy as spi
 import os
-import shutil
-
+import glob
 import data
+import shutil
+import numpy as np
+
 from illustrate import render, contrast, plot_heatmap
 
 
 def run_all_tests():
     test_prep()
-    run_example()
 
 
 def test_prep():
@@ -37,8 +36,8 @@ def plot_data_index():
     dupes = 0
     for s in slots:
         num_ocpd = 0
-        row_id = data.data_index[str(s)][0]
-        col_id = data.data_index[str(s)][1]
+        row_id = data.data_index[str(s)].pixels[0]
+        col_id = data.data_index[str(s)].pixels[1]
         for i in range(len(row_id)):
             n = row_id[i]
             m = col_id[i]
@@ -69,34 +68,30 @@ def plot_sample_heatmap():
     path = 'example/sample_output/'
     if not os.path.isdir(path):
         os.mkdir(path)
+    fpaths = glob.glob('csv_data/Basement/**/*_000001.csv')
+    fpath = fpaths[129]
+    #fpath = 'csv_data/Basement/2020-12-08/084739_000100.csv'
+    matf = data.read_csv(fpath)
+    plot_heatmap(matf, os.path.join('matf_Heatmap_000000.png'))
 
-    file_pattern = 'csv_data/Basement/**/*_000000.csv'
-    #mat0 = data.find_average(file_pattern)
-    #np.savetxt("avg_000000.csv", mat0, delimiter=",")
+    file_pattern = 'csv_data/Basement/**/*_000001.csv'
+    # mat0 = data.find_average(file_pattern)
+    # np.savetxt("avg_000000.csv", mat0, delimiter=",")
     mat0 = data.read_csv('avg_000000.csv')
-
-    fpath1 = 'csv_data/Basement/2020-11-23/000012_000000.csv'
-    fpath2 = 'csv_data/Basement/2020-11-24/084934_111110.csv'
-    fpath3 = 'csv_data/Basement/2020-11-24/090936_111111.csv'
-    mat1 = data.read_csv(fpath1)
-    mat2 = data.read_csv(fpath2)
-    mat3 = data.read_csv(fpath3)
-
-    #mat1[mat1 > 2500.0] = 0
-    mat1[:30,] = np.median(mat1)
-    mat2[:30,] = np.median(mat2)
-    mat3[:30,] = np.median(mat3)
-    dn = mat3 - mat0
-    #dn = np.abs(dn)
-    plot_heatmap(mat0, 'Heatmap_Avg_000000.png')
-    plot_heatmap(mat1, 'Heatmap_000000.png')
-    plot_heatmap(mat2, 'Heatmap_111110.png')
-    plot_heatmap(mat3, 'Heatmap_111111.png')
-    plot_heatmap(dn, 'Heatmap_Denoise_111111.png')
-    #plot_heatmap(mat2-mat1)
+    mat1 = data.read_csv('csv_data/Basement/2020-11-23/000012_000000.csv')
+    mat2 = data.read_csv('csv_data/Basement/2020-11-24/084934_111110.csv')
+    mat3 = data.read_csv('csv_data/Basement/2020-11-24/090936_111111.csv')
+    dn = matf - mat0
+    dn = np.abs(dn)
+    #mat0 = 150 * np.random.random_sample((64, 48)) + 50
+    plot_heatmap(mat0, os.path.join('Heatmap_Avg_000000.png'))
+    plot_heatmap(mat1, os.path.join('Heatmap_000000.png'))
+    plot_heatmap(mat2, os.path.join('Heatmap_111110.png'))
+    plot_heatmap(mat3, os.path.join('Heatmap_111111.png'))
+    plot_heatmap(dn, os.path.join('Heatmap_Denoise_111111.png'))
 
 
-def run_example():
+def run_example0():
     '''Plots some csv data sample files.'''
     outpath = 'example/sample_output/'
     if os.path.isdir(outpath):
@@ -136,3 +131,28 @@ def run_example():
                'Normalization after cropping', titles, cmap='gray')
     contrast([mat2, c_mat2], os.path.join(outpath, 'rainbow_crop.png'),
                'Normalization after cropping', titles, cmap='rainbow')
+
+
+def run_example1():
+    path = 'example/sample_output/'
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
+    mat = data.read_csv('avg_000000.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_000000.png'))
+    mat = data.find_average('csv_data/Basement/**/*_000001.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_000001.png'))
+    mat = data.find_average('csv_data/Basement/**/*_000010.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_000010.png'))
+    mat = data.find_average('csv_data/Basement/**/*_000100.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_000100.png'))
+    mat = data.find_average('csv_data/Basement/**/*_001000.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_001000.png'))
+    mat = data.find_average('csv_data/Basement/**/*_010000.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_010000.png'))
+    mat = data.find_average('csv_data/Basement/**/*_100000.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_100000.png'))
+    mat = data.find_average('csv_data/Basement/**/*_111111.csv')
+    plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_111111.png'))
+
+

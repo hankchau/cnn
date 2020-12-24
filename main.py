@@ -1,5 +1,5 @@
 #from cnn import CNN
-#from data import get_data
+import data
 
 
 def main():
@@ -7,7 +7,7 @@ def main():
     # data_path = 'csv_data/'
     # get_data(host, data_path)
 
-    # data.find_label_distr()
+    data.find_label_distr()
 
 
     # build CNN

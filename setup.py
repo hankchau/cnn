@@ -1,5 +1,6 @@
 from setuptools import setup
 
+
 setup(
     name='cnn',
     install_requires=[

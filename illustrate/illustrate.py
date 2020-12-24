@@ -1,10 +1,8 @@
-import os
-import numpy as np
-from math import sin, cos, radians
 import data
-from PIL import Image, ImageOps
+import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as pat
+from PIL import Image
+from math import sin, radians
 
 
 def render(mat, outpath):
@@ -24,27 +22,42 @@ def contrast(mats, outpath, suptitle, titles, cmap='gray'):
     plt.savefig(outpath)
 
 
-def plot_heatmap(mat, fname):
+def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow'):
+    if len(mat.shape) == 1:
+        print(fpath + ' cannot be generated, since no data of this kind is found.')
+        return 0
+
     range_depth = 12.8
-    y_lim = +cos(radians(60)) * range_depth
     range_width = +sin(radians(60)) * range_depth
 
     x, y = data.get_transform_index()
-    #x, y, mat = x.ravel(), y.ravel(), mat.ravel()
     # matplotlib
-    plt.figure(figsize=(10,6))
-    ax = plt.subplot(1,1,1)
-    #ax.imshow(mat, cmap='rainbow',
-              #extent=[-range_width, +range_width, 0, range_depth],
-              #alpha=0.95)
-    ax.pcolormesh(x, y, mat, cmap='rainbow', vmin=0.0, vmax=255.0, shading='nearest')
-    #ax.scatter(x, y, mat)
-    ax.set_title('Range Azimuth Heatmap (-60\N{DEGREE SIGN}, 60\N{DEGREE SIGN})')
-    ax.set_xlabel('Azimuth [m]')
-    ax.set_ylabel('Range [m]')
-    ax.set_xlim([-range_width - 0.5, range_width + 0.5])
-    ax.set_ylim([0, range_depth + 0.5])
-    plt.savefig(fname)
+    plt.figure(figsize=(12,6))
+    plt.pcolormesh(x, y, mat, cmap=cmap, shading=shading, vmin=0.0, vmax=500)
+    plt.colorbar()
+    plt.title('Range Azimuth Heatmap (-60\N{DEGREE SIGN}, 60\N{DEGREE SIGN})')
+    plt.xlabel('Azimuth [m]')
+    plt.ylabel('Range [m]')
+    plt.xlim([-range_width - 0.5, range_width + 0.5])
+    plt.ylim([0, range_depth + 0.5])
+    plt.tight_layout()
+
+    slots = [53, 54, 55, 56, 57, 58]
+    # plot ROI boxes
+    for i in range(len(slots)):
+        id = slots[i]
+        reg = data.data_index[str(id)]
+        pts = reg.get_corners()
+        pts.append(pts[0])
+
+        new_x = []
+        new_y = []
+        for p in pts:
+            new_x.append(x[p[0], p[1]])
+            new_y.append(y[p[0], p[1]])
+        plt.plot(new_x, new_y, 'black')
+
+    plt.savefig(fpath)
     plt.close()
 
 

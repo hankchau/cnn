@@ -1,9 +1,7 @@
 import os
-import math
 import numpy as np
 import requests
 import data
-from scipy.interpolate import griddata
 from bs4 import BeautifulSoup
 
 
@@ -12,17 +10,6 @@ def get_labels(fname):
     labels = np.array(labels)
 
     return labels.astype(float)
-
-
-def get_time(fname):
-    return 0
-
-
-def normalize(mat, range):
-    max, min = np.max(mat), np.min(mat)
-    mat = (mat - min) * (range/(max-min))
-
-    return mat
 
 
 def get_transform_index():
@@ -37,7 +24,6 @@ def get_transform_index():
     # transform to sector coord
     r = range_scale/range_bins * n
     beta = 2 * angle_width/angle_bins     # angle ranges from -60 ~ 60 degrees
-
     t = -angle_width + (beta * m)
     t = np.radians(t)
 
@@ -50,9 +36,22 @@ def get_transform_index():
 def fill_data_index(fpath):
     mat = np.genfromtxt(fpath, delimiter=',')
 
-    slots = [53, 54, 55, 56, 57, 58, -1, -2, -3, -4]
-    for id in slots:
-        data.data_index[str(id)] = np.where(mat == id)
+    slots = [53, 54, 55, 56, 57, 58]
+    corners = [
+        [(47,45), (63,38), (63,34), (40,41)],
+        [(35,37), (62,31), (60,27), (31,30)],
+        [(31,29), (59,26), (59,22), (32,20)],
+        [(31,18), (59,21), (61,17), (36,12)],
+        [(36,11), (62,16), (63,12), (43,6)],
+        [(45,6), (63,11), (63,6), (53,2)]
+    ]
+
+    for i in range(len(slots)):
+        id = slots[i]
+        data.data_index[str(id)].pixels = np.where(mat == id)
+        data.data_index[str(id)].set_corners(
+            corners[i]
+        )
 
 
 def read_csv(fpath):
