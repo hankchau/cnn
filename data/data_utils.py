@@ -2,11 +2,12 @@ import os
 import numpy as np
 import requests
 import data
+from PIL import Image
 from bs4 import BeautifulSoup
 
 
 def get_labels(fname):
-    labels = list(fname[-10:-4])
+    labels = list(fname[fname.rfind('_'):fname.rfind('.')])
     labels = np.array(labels)
 
     return labels.astype(float)
@@ -36,14 +37,15 @@ def get_transform_index():
 def fill_data_index(fpath):
     mat = np.genfromtxt(fpath, delimiter=',')
 
+    # --- Based on 2020-10-30 measured data
     slots = [53, 54, 55, 56, 57, 58]
     corners = [
-        [(47,45), (63,38), (63,34), (40,41)],
-        [(35,37), (62,31), (60,27), (31,30)],
-        [(31,29), (59,26), (59,22), (32,20)],
-        [(31,18), (59,21), (61,17), (36,12)],
-        [(36,11), (62,16), (63,12), (43,6)],
-        [(45,6), (63,11), (63,6), (53,2)]
+        [(5.47578, 5.7336), (7.8109, 5.53696), (7.8109, 12), (5.47578, 12)],
+        [(1.52773, 6.00399), (4.0286, 5.83192), (4.0286, 12), (1.52773, 12)],
+        [(-0.993809, 6.07773), (1.52773, 6.00399), (1.52773, 12), (-0.993809, 12)],
+        [(-3.66002, 6.07773), (-0.993809, 6.07773), (-0.993809, 12), (-3.66002, 12)],
+        [(-6.24357, 6.12689), (-3.66002, 6.07773), (-3.66002, 12), (-6.24357, 12)],
+        [(-8.88911, 5.95483), (-6.24357, 6.12689), (-6.24357, 12), (-8.88911, 12)]
     ]
 
     for i in range(len(slots)):
@@ -58,16 +60,15 @@ def read_csv(fpath):
     return np.genfromtxt(fpath, delimiter=',')
 
 
-def crop_matrix(mat, index, axis=0):
-    if axis is 0:
-        return mat[:index, :]
-    elif axis is 1:
-        return mat[:,:index]
-    elif axis is 'both':
-        try:
-            return mat[:index[0], :index[1]]
-        except IndexError as e:
-            print('setting axis as "both" requires two indices')
+def crop_image(im_path):
+    im = Image.open(im_path).convert('RGB')
+    top, bot = 87, 311
+    left, right = 167, 667
+    im = im.crop((left, top, right, bot))
+    im.show()
+    im.close()
+
+    return im
 
 
 def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):

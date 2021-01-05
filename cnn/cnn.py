@@ -41,10 +41,10 @@ class CNN_paper:
         tf.keras.utils.plot_model(self.model, 'CNN.png')
 
 
-class CNN_all():
+class CNN():
     def __init__(self):
         input = tf.keras.Input()
-
+        
 
 
         output = tf.keras.layers.Dense(6, activation='softmax', name='Output')()

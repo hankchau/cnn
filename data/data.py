@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import illustrate
 import itertools
 import glob
 from data.data_utils import *
@@ -83,6 +84,30 @@ def find_label_distr():
             f.write(l + ' : %i\n' % len(ls))
 
 
+def get_ROI(im_path):
+    im = crop_image(im_path)
+
+    return np.array(im)
+
+
+def generate_heatmaps():
+    outpath = 'output/'
+    if not os.path.isdir(outpath):
+        os.mkdir(outpath)
+
+    outpath += 'heatmaps'
+    if not os.path.isdir(outpath):
+        os.mkdir(outpath)
+
+    fpaths = glob.glob('csv_data/**/**/*.csv', recursive=True)
+    for f in fpaths:
+        mat = read_csv(f)
+        fname = f[f.find('/')+1:f.rfind('.')]
+        fname = fname.replace('/', '_')
+        illustrate.plot_heatmap(mat, os.path.join(outpath, fname + '.png'),
+                                roi_boxes=False)
+
+
 def stack_training_data(data_dir):
     data_dir = os.path.join(data_dir, '**/**/*.csv')
     fpaths = glob.glob(data_dir, recursive=True)
@@ -98,3 +123,4 @@ def stack_training_data(data_dir):
         y[:,i] = get_labels(fname)
 
     return x, y
+

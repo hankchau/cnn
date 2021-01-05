@@ -156,3 +156,9 @@ def run_example1():
     plot_heatmap(mat, os.path.join(path, 'Heatmap_Avg_111111.png'))
 
 
+def test_crop_image():
+    fpath = 'example/sample_output/Heatmap_Avg_111111.png'
+    mat = data.find_average('csv_data/Basement/**/*_111111.csv')
+    plot_heatmap(mat, fpath, roi_boxes=False)
+    mat = data.get_ROI(fpath)
+    print(mat)

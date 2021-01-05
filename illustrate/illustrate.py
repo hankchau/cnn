@@ -22,7 +22,7 @@ def contrast(mats, outpath, suptitle, titles, cmap='gray'):
     plt.savefig(outpath)
 
 
-def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow'):
+def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow', roi_boxes=True):
     if len(mat.shape) == 1:
         print(fpath + ' cannot be generated, since no data of this kind is found.')
         return 0
@@ -42,20 +42,21 @@ def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow'):
     plt.ylim([0, range_depth + 0.5])
     plt.tight_layout()
 
-    slots = [53, 54, 55, 56, 57, 58]
     # plot ROI boxes
-    for i in range(len(slots)):
-        id = slots[i]
-        reg = data.data_index[str(id)]
-        pts = reg.get_corners()
-        pts.append(pts[0])
+    if roi_boxes:
+        slots = [53, 54, 55, 56, 57, 58]
+        for i in range(len(slots)):
+            id = slots[i]
+            reg = data.data_index[str(id)]
+            pts = reg.get_corners()
+            pts.append(pts[0])
 
-        new_x = []
-        new_y = []
-        for p in pts:
-            new_x.append(x[p[0], p[1]])
-            new_y.append(y[p[0], p[1]])
-        plt.plot(new_x, new_y, 'black')
+            x_coord = []
+            y_coord = []
+            for p in pts:
+                x_coord.append(p[0])
+                y_coord.append(p[1])
+            plt.plot(x_coord, y_coord, 'black')
 
     plt.savefig(fpath)
     plt.close()
