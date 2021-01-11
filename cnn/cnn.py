@@ -6,7 +6,7 @@ dropout2 = 0.5   # dropout rate 2
 dropout3 = 0.5   # dropout rate 3
 
 
-class CNN_paper:
+class CNNPaper:
     def __init__(self):
         print('building CNN model ...')
 

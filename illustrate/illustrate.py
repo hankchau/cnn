@@ -32,15 +32,15 @@ def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow', roi_boxes=True):
 
     x, y = data.get_transform_index()
     # matplotlib
-    plt.figure(figsize=(12,6))
-    plt.pcolormesh(x, y, mat, cmap=cmap, shading=shading, vmin=0.0, vmax=500)
-    plt.colorbar()
-    plt.title('Range Azimuth Heatmap (-60\N{DEGREE SIGN}, 60\N{DEGREE SIGN})')
-    plt.xlabel('Azimuth [m]')
-    plt.ylabel('Range [m]')
-    plt.xlim([-range_width - 0.5, range_width + 0.5])
-    plt.ylim([0, range_depth + 0.5])
-    plt.tight_layout()
+    fig = plt.figure(figsize=(6,3))
+    ax = fig.add_subplot(111)
+    im = ax.pcolormesh(x, y, mat, cmap=cmap, shading=shading, vmin=0.0, vmax=500)
+    fig.colorbar(im)
+    ax.set_title('Range Azimuth Heatmap (-60\N{DEGREE SIGN}, 60\N{DEGREE SIGN})')
+    ax.set_xlabel('Azimuth [m]')
+    ax.set_ylabel('Range [m]')
+    ax.set_xlim([-range_width - 0.5, range_width + 0.5])
+    ax.set_ylim([0, range_depth + 0.5])
 
     # plot ROI boxes
     if roi_boxes:
@@ -56,10 +56,11 @@ def plot_heatmap(mat, fpath, shading='gouraud', cmap='rainbow', roi_boxes=True):
             for p in pts:
                 x_coord.append(p[0])
                 y_coord.append(p[1])
-            plt.plot(x_coord, y_coord, 'black')
-
-    plt.savefig(fpath)
-    plt.close()
+            ax.plot(x_coord, y_coord, 'black')
+    fig.tight_layout()
+    fig.savefig(fpath)
+    fig.clf()
+    plt.close(fig)
 
 
 def plot_accuracy():

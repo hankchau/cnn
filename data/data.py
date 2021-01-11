@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import shutil
 import illustrate
 import itertools
 import glob
@@ -7,7 +8,11 @@ from data.data_utils import *
 
 
 def get_data(host, dpath):
+    # remove current data
+    if os.path.isdir(dpath):
+        shutil.rmtree(dpath)
     os.mkdir(dpath)
+
     all_data_paths = []     # list of all csv paths
 
     print('scraping data from host ' + host)
@@ -37,7 +42,7 @@ def get_data(host, dpath):
     # print('finished with the ParaParking data')
 
     # save all output paths
-    with open('csv_paths.txt', 'wb') as file:
+    with open('csv_paths.txt', 'w') as file:
         for p in all_data_paths:
             file.write(p)
     print('all data file paths stored in csv_paths.txt')
@@ -69,42 +74,56 @@ def find_average(file_pattern):
     return mat / num
 
 
-def find_label_distr():
+def find_label_distr(outpath):
+    if not os.path.isdir(outpath):
+        os.mkdir(outpath)
+    outpath = os.path.join(outpath, 'label_distributions.txt')
     # find all possible label states
     labels = []
     bins = itertools.product('01', repeat=6)
     for b in bins:
         labels.append(''.join(b))
 
-    with open('label_distributions.txt', 'w+') as f:
+    with open(outpath, 'w+') as f:
         f.write('label  : frequency\n')
 
         for l in labels:
-            ls = glob.glob('csv_data/Basement/**/*_' + l + '.csv')
+            ls = glob.glob('csv_data/**/**/*_' + l + '.csv')
             f.write(l + ' : %i\n' % len(ls))
 
 
 def get_ROI(im_path):
-    im = crop_image(im_path)
+    with Image.open(im_path) as im:
+        im = im.convert('RGB')
+        top, bot = 59, 147
+        left, right = 111, 343
+        im = im.crop((left, top, right, bot))
+        im = im.resize((256,64))
 
-    return np.array(im)
+        im.save('example/sample_output/ROI.png')
+
+        mat = np.array(im)
+        im.close()
+
+        return mat
 
 
-def generate_heatmaps():
-    outpath = 'output/'
-    if not os.path.isdir(outpath):
-        os.mkdir(outpath)
-
-    outpath += 'heatmaps'
-    if not os.path.isdir(outpath):
-        os.mkdir(outpath)
+def generate_heatmaps(outpath):
+    outpath = os.path.join(outpath, 'heatmaps')
+    if os.path.isdir(outpath):
+        shutil.rmtree(outpath)
+    os.makedirs(outpath, exist_ok=True)
 
     fpaths = glob.glob('csv_data/**/**/*.csv', recursive=True)
     for f in fpaths:
+        id = f.rfind('/')
+        fname = f[id+1:f.rfind('.')]
+        fname += '.png'
+        fdir = os.path.join(outpath, f[f.find('/')+1:id])
+        if not os.path.isdir(fdir):
+            os.makedirs(fdir, exist_ok=True)
         mat = read_csv(f)
-        fname = f[f.find('/')+1:f.rfind('.')]
-        fname = fname.replace('/', '_')
-        illustrate.plot_heatmap(mat, os.path.join(outpath, fname + '.png'),
+        illustrate.plot_heatmap(mat, os.path.join(fdir, fname),
                                 roi_boxes=False)
 
 

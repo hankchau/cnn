@@ -157,8 +157,10 @@ def run_example1():
 
 
 def test_crop_image():
-    fpath = 'example/sample_output/Heatmap_Avg_111111.png'
-    mat = data.find_average('csv_data/Basement/**/*_111111.csv')
-    plot_heatmap(mat, fpath, roi_boxes=False)
+    #fpath = 'example/sample_output/Heatmap_Avg_111111.png'
+    #mat = data.find_average('csv_data/Basement/**/*_111111.csv')
+    mat = data.read_csv('csv_data/Basement/2020-12-01/133847_111111.csv')
+    fpath = 'example/sample_output/Basement_2020-12-01_133847_111111.png'
+    plot_heatmap(mat, fpath, roi_boxes=True)
     mat = data.get_ROI(fpath)
     print(mat)

@@ -60,17 +60,6 @@ def read_csv(fpath):
     return np.genfromtxt(fpath, delimiter=',')
 
 
-def crop_image(im_path):
-    im = Image.open(im_path).convert('RGB')
-    top, bot = 87, 311
-    left, right = 167, 667
-    im = im.crop((left, top, right, bot))
-    im.show()
-    im.close()
-
-    return im
-
-
 def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):
     r = requests.get(addr)
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -91,14 +80,20 @@ def get_csv(csv_links, outpath):
         for l in csv_links:
             r = sess.get(l)
             path = save_csv(l, r.content, outpath)
-            paths.append(path)
+            if path:
+                paths.append(path)
 
     return paths
 
 
 def save_csv(link, content, outpath):
-    fname = link[-17:]
-    date = link[-28:-17]
+    id = link.rfind('/')
+    fname = link[id+1:]
+    if len(fname) < 13:
+        return None
+
+    date = link[:id]
+    date = date[-10:]
     fpath = os.path.join(outpath, date)
 
     if not os.path.isdir(fpath):
