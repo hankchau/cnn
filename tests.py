@@ -3,11 +3,9 @@ import data
 
 
 def main():
-    data.tests.test_prep()
-    #tests.run_all_tests()
-    #data.tests.plot_data_index()
+    data.fill_data_index('data/areaMask.csv')
     data.tests.test_crop_image()
-    #data.tests.plot_sample_heatmap()
+    data.tests.test_stack_training_data()
 
 
 

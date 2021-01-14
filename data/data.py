@@ -4,7 +4,8 @@ import shutil
 import illustrate
 import itertools
 import glob
-from data.data_utils import *
+import data.data_utils as du
+from matplotlib import pyplot as plt
 
 
 def get_data(host, dpath):
@@ -49,12 +50,12 @@ def get_data(host, dpath):
 
 
 def download_data(addr, outpath):
-    date_links = get_links(addr)
+    date_links = du.get_links(addr)
 
     paths = []
     for dl in date_links:
-        csv_links = get_links(dl)
-        path = get_csv(csv_links, outpath)
+        csv_links = du.get_links(dl)
+        path = du.get_csv(csv_links, outpath)
         paths.extend(path)
 
     return paths
@@ -68,7 +69,7 @@ def find_average(file_pattern):
     mat = np.zeros((64,48))
     num = 0
     for f in fpaths:
-        mat += read_csv(f)
+        mat += du.read_csv(f)
         num += 1
 
     return mat / num
@@ -92,29 +93,13 @@ def find_label_distr(outpath):
             f.write(l + ' : %i\n' % len(ls))
 
 
-def get_ROI(im_path):
-    with Image.open(im_path) as im:
-        im = im.convert('RGB')
-        top, bot = 59, 147
-        left, right = 111, 343
-        im = im.crop((left, top, right, bot))
-        im = im.resize((256,64))
-
-        im.save('example/sample_output/ROI.png')
-
-        mat = np.array(im)
-        im.close()
-
-        return mat
-
-
-def generate_heatmaps(outpath):
-    outpath = os.path.join(outpath, 'heatmaps')
+def generate_heatmaps(csvpath, outpath):
     if os.path.isdir(outpath):
         shutil.rmtree(outpath)
     os.makedirs(outpath, exist_ok=True)
 
-    fpaths = glob.glob('csv_data/**/**/*.csv', recursive=True)
+    fpaths = glob.glob(os.path.join(csvpath, '**/**/*.csv'), recursive=True)
+    outpaths = []
     for f in fpaths:
         id = f.rfind('/')
         fname = f[id+1:f.rfind('.')]
@@ -122,24 +107,58 @@ def generate_heatmaps(outpath):
         fdir = os.path.join(outpath, f[f.find('/')+1:id])
         if not os.path.isdir(fdir):
             os.makedirs(fdir, exist_ok=True)
-        mat = read_csv(f)
-        illustrate.plot_heatmap(mat, os.path.join(fdir, fname),
-                                roi_boxes=False)
+
+        outpaths.append(os.path.join(fdir, fname))
+
+    illustrate.plot_heatmaps(fpaths, outpaths, roi_boxes=False)
 
 
-def stack_training_data(data_dir):
-    data_dir = os.path.join(data_dir, '**/**/*.csv')
-    fpaths = glob.glob(data_dir, recursive=True)
+def generate_ROIs(hmpath, outpath):
+    if os.path.isdir(outpath):
+        shutil.rmtree(outpath)
+    os.makedirs(outpath, exist_ok=True)
 
-    h, w, n, label_dim = 64, 48, len(fpaths), 6
-    # n = 1000
-    x = np.empty((h,w,n), dtype=float)
-    y = np.empty((label_dim,n), dtype=int)
+    fpaths = glob.glob(os.path.join(hmpath, '**/**/*.png'), recursive=True)
+    outpaths = []
+    for f in fpaths:
+        f = f.strip(hmpath)
+        id = f.rfind('/')
+        fname = f[id+1:]
+        fdir = os.path.join(outpath, f[:id])
+        if not os.path.isdir(fdir):
+            os.makedirs(fdir, exist_ok=True)
+
+        outpaths.append(os.path.join(fdir, fname))
+
+    illustrate.plot_ROIs(fpaths, outpaths)
+
+
+def load_training_data(roi_dir=None, batch=30000, save=False, saved_x=None, saved_y=None):
+    if not roi_dir:
+        if not saved_x and not saved_y:
+            print('error: must provide either ROI directory or saved numpy matrices')
+            exit(0)
+    if saved_x and saved_y:
+        return np.load(saved_x), np.load(saved_y)
+
+    fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
+    shape = du.read_image(fpaths[0]).shape
+    n = len(fpaths)
+    x = np.ndarray(shape=(n,shape[0], shape[1], shape[2]))
+    y = np.ndarray(shape=(n,6))
 
     for i in range(n):
-        fname = fpaths[i]
-        x[:,:,i] = read_csv(fname)
-        y[:,i] = get_labels(fname)
+        mat = du.read_image(fpaths[i])
+        label = du.get_labels(fpaths[i])
+        x[i,:,:,:] = mat
+        y[i,:] = label
 
-    return x, y
+    if save:
+        save_dir = 'saved_files'
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir, exist_ok=True)
+        np.save(os.path.join(save_dir, 'x_train'), x)
+        np.save(os.path.join(save_dir, 'y_train'), y)
+        print('training data matrices saved in \'saved_files/\'')
 
+    return x, [0]

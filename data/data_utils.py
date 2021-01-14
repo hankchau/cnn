@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 
 def get_labels(fname):
-    labels = list(fname[fname.rfind('_'):fname.rfind('.')])
+    labels = list(fname[fname.rfind('_')+1:fname.rfind('.')])
     labels = np.array(labels)
 
     return labels.astype(float)
@@ -56,10 +56,6 @@ def fill_data_index(fpath):
         )
 
 
-def read_csv(fpath):
-    return np.genfromtxt(fpath, delimiter=',')
-
-
 def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):
     r = requests.get(addr)
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -86,6 +82,10 @@ def get_csv(csv_links, outpath):
     return paths
 
 
+def read_csv(fpath):
+    return np.genfromtxt(fpath, delimiter=',')
+
+
 def save_csv(link, content, outpath):
     id = link.rfind('/')
     fname = link[id+1:]
@@ -95,7 +95,6 @@ def save_csv(link, content, outpath):
     date = link[:id]
     date = date[-10:]
     fpath = os.path.join(outpath, date)
-
     if not os.path.isdir(fpath):
         os.mkdir(fpath)
 
@@ -104,3 +103,11 @@ def save_csv(link, content, outpath):
         csv_file.write(content)
 
     return fpath
+
+
+def read_image(fpath):
+    with Image.open(fpath) as im:
+        im.convert('RGB')
+        mat = np.array(im)
+
+    return mat
