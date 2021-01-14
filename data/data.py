@@ -136,7 +136,7 @@ def generate_ROIs(hmpath, outpath):
 def load_training_batch(fpaths, step, batch_size, save_dir=None):
     shape = du.read_image(fpaths[0]).shape
     x = np.ndarray(shape=(batch_size, shape[0], shape[1], shape[2]))
-    y = np.ndarray(shape=(batch_size, ㄓ))
+    y = np.ndarray(shape=(batch_size, 5))
 
     for i in range(batch_size):
         mat = du.read_image(fpaths[i])
