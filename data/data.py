@@ -133,32 +133,23 @@ def generate_ROIs(hmpath, outpath):
     illustrate.plot_ROIs(fpaths, outpaths)
 
 
-def load_training_data(roi_dir=None, batch=30000, save=False, saved_x=None, saved_y=None):
-    if not roi_dir:
-        if not saved_x and not saved_y:
-            print('error: must provide either ROI directory or saved numpy matrices')
-            exit(0)
-    if saved_x and saved_y:
-        return np.load(saved_x), np.load(saved_y)
-
-    fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
+def load_training_batch(fpaths, step, batch_size, save_dir=None):
     shape = du.read_image(fpaths[0]).shape
-    n = len(fpaths)
-    x = np.ndarray(shape=(n,shape[0], shape[1], shape[2]))
-    y = np.ndarray(shape=(n,6))
+    x = np.ndarray(shape=(batch_size, shape[0], shape[1], shape[2]))
+    y = np.ndarray(shape=(batch_size, ㄓ))
 
-    for i in range(n):
+    for i in range(batch_size):
         mat = du.read_image(fpaths[i])
         label = du.get_labels(fpaths[i])
         x[i,:,:,:] = mat
         y[i,:] = label
 
-    if save:
-        save_dir = 'saved_files'
+    if save_dir:
         if not os.path.isdir(save_dir):
-            os.makedirs(save_dir, exist_ok=True)
-        np.save(os.path.join(save_dir, 'x_train'), x)
-        np.save(os.path.join(save_dir, 'y_train'), y)
+            print('error: no such directory')
+            exit(0)
+        np.save(os.path.join(save_dir, 'x_train' + str(step)), x)
+        np.save(os.path.join(save_dir, 'y_train' + str(step)), y)
         print('training data matrices saved in \'saved_files/\'')
 
-    return x, [0]
+    return x, y

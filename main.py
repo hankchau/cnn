@@ -22,13 +22,29 @@ def main():
     #data.generate_heatmaps(data_path, hm_dir)
     roi_dir = os.path.join(outpath, 'ROIs')
     #data.generate_ROIs(hm_dir, roi_dir)
-    x, y = data.load_training_data(roi_dir, save=True)
+
 
     # build CNN
     # model = CNN()
     # model.visualize()
 
     # Train
+    fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
+    n = len(fpaths)
+    step = 0
+    batch_size = 30000
+    for i in range(0, n, batch_size):
+        roi_files = fpaths[i:i+batch_size]
+        if i + batch_size >= n:
+            roi_files = fpaths[i:]
+
+        x, y = data.load_training_batch(roi_files, step, len(roi_files))
+        print('\nStep: ' + str(step))
+        step += 1
+        print(len(roi_files))
+        print(x.shape)
+        print(y.shape)
+        del x, y
 
 
 if __name__ == '__main__':

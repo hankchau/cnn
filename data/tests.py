@@ -18,10 +18,10 @@ def test_crop_image():
 
 def test_stack_training_data():
     roi_dir = 'example/sample_output/ROIs/'
-    x, y = data.load_training_data(roi_dir, save=True)
+    x, y = data.load_training_batch(roi_dir, save=True)
     print(x.shape)
     print(y.shape)
-    x, y = data.load_training_data(saved_x='saved_files/x_train.npy',
+    x, y = data.load_training_batch(saved_x='saved_files/x_train.npy',
                                    saved_y='saved_files/y_train.npy')
     print(x.shape)
     print(y.shape)

@@ -40,6 +40,9 @@ class CNNPaper:
         print(self.model.summary())
         tf.keras.utils.plot_model(self.model, 'CNN.png')
 
+    def fit(self):
+        return 0
+
 
 class CNN():
     def __init__(self):
