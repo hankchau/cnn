@@ -1,2 +1,2 @@
 # CNN
-from cnn.cnn import CNN_all
+from cnn.cnn import CNN

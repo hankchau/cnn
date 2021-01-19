@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 
 
 dropout1 = 0.5   # dropout rate 1
@@ -6,11 +7,11 @@ dropout2 = 0.5   # dropout rate 2
 dropout3 = 0.5   # dropout rate 3
 
 
-class CNNPaper:
+class CNN:
     def __init__(self):
         print('building CNN model ...')
 
-        input = tf.keras.Input((40,40,256), batch_size=512, name='Input')
+        input = tf.keras.Input((256,86,3), batch_size=512, name='Input')
 
         # convolutional layers
         conv1 = tf.keras.layers.Conv2D(16, (3,3), padding='VALID', activation='relu', name='Conv1')(input)
@@ -28,13 +29,21 @@ class CNNPaper:
 
         # fully-connected layers
         flat = tf.keras.layers.Flatten(name='Flat')(conv4)
-        fc1 = tf.keras.layers.Dense(20, name='FC1')(flat)
+        fc1 = tf.keras.layers.Dense(32, name='FC1')(flat)
         drop3 = tf.keras.layers.Dropout(dropout3, name='Drop3')(fc1)
 
-        output = tf.keras.layers.Dense(1, activation='softmax', name='Output')(drop3)
+        output = tf.keras.layers.Dense(32, activation='softmax', name='Output')(drop3)
 
         # build model
         self.model = tf.keras.Model(inputs=input, outputs=output)
+
+    def compile(self):
+        opt = tf.keras.optimizers.Adam(lr=0.0001)
+        self.model.compile(
+            optimizer=opt,
+            loss='categorical_crossentropy',
+            metrics=['acc']
+        )
 
     def visualize(self):
         print(self.model.summary())
@@ -43,27 +52,18 @@ class CNNPaper:
     def fit(self):
         return 0
 
+    def train_on_batch(self, x, y, class_weight=None, return_dict=False):
+        dict = self.model.train_on_batch(
+            x, y, class_weight=class_weight, return_dict=return_dict
+        )
+        print('Loss: %f     Accuracy: %f' % (dict['loss'], dict['acc']))
+        print('Recall: ')
+        return dict
 
-class CNN():
-    def __init__(self):
-        input = tf.keras.Input()
-        
+    def save(self, outpath):
+        outpath = os.path.join(outpath, 'model')
+        self.model.save(outpath, overwrite=True)
 
-
-        output = tf.keras.layers.Dense(6, activation='softmax', name='Output')()
-        self.model = tf.keras.Model(inputs=input, outputs=output)
-
-    def visualize(self):
-        print(self.model.summary())
-
-
-class FullyConnected():
-    def __init__(self):
-        input = tf.keras.Input()
-        fc1 = tf.keras.layers.Dense(10)(input)
-        # fc2 = tf.keras.layers.Dense()
-        output = tf.keras.layers.Dense(1, activation='softmax', name='Output')(fc1)
-        self.model = tf.keras.Model(inputs=input, outputs=output)
-
-    def visualize(self):
-        print(self.model.summary())
+    def save_weights(self, outpath):
+        outpath = os.path.join(outpath, 'model_weights')
+        self.model.save_weights(outpath, overwrite=True)

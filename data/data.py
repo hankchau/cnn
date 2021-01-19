@@ -5,6 +5,7 @@ import illustrate
 import itertools
 import glob
 import data.data_utils as du
+import tensorflow as tf
 from matplotlib import pyplot as plt
 
 
@@ -134,14 +135,23 @@ def generate_ROIs(hmpath, outpath):
 
 
 def load_training_batch(fpaths, step, batch_size, save_dir=None):
+    # find all possible label states
+    labels = []
+    bins = itertools.product('01', repeat=5)
+    for b in bins:
+        labels.append(''.join(b))
+
     shape = du.read_image(fpaths[0]).shape
     x = np.ndarray(shape=(batch_size, shape[0], shape[1], shape[2]))
-    y = np.ndarray(shape=(batch_size, 5))
+    y = np.ndarray(shape=(batch_size,len(labels)))
 
     for i in range(batch_size):
         mat = du.read_image(fpaths[i])
         label = du.get_labels(fpaths[i])
-        x[i,:,:,:] = mat
+        x[i,:,:,:] = mat / 255
+        id = labels.index(label[:-1])
+        label = [0] * len(labels)
+        label[id] = 1
         y[i,:] = label
 
     if save_dir:

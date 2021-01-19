@@ -7,10 +7,7 @@ from bs4 import BeautifulSoup
 
 
 def get_labels(fname):
-    labels = list(fname[fname.rfind('_')+1:fname.rfind('.')])
-    labels = np.array(labels)
-
-    return labels.astype(float)
+    return fname[fname.rfind('_')+1:fname.rfind('.')]
 
 
 def get_transform_index():
@@ -108,6 +105,7 @@ def save_csv(link, content, outpath):
 def read_image(fpath):
     with Image.open(fpath) as im:
         im.convert('RGB')
+        im = im.resize((86,256))
         mat = np.array(im)
 
     return mat
