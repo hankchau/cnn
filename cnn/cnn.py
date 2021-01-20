@@ -1,5 +1,11 @@
 import tensorflow as tf
+import data
 import os
+import sys
+import shutil
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from random import shuffle
 
 
 dropout1 = 0.5   # dropout rate 1
@@ -8,9 +14,22 @@ dropout3 = 0.5   # dropout rate 3
 
 
 class CNN:
-    def __init__(self):
-        print('building CNN model ...')
+    def __init__(self, outpath, model=None, weights=None):
+        if model is None:
+            self.model = self.build_model()
+        else:
+            self.model = tf.keras.models.load_model(model)
+        if weights is not None:
+            self.model.load_weights(weights)
+        self.train_loss = []
+        self.train_acc = []
+        self.val_loss = []
+        self.val_acc = []
+        self.outpath = outpath
+        self.epochs = 0
 
+    def build_model(self):
+        print('building CNN model ...')
         input = tf.keras.Input((256,86,3), batch_size=512, name='Input')
 
         # convolutional layers
@@ -24,18 +43,16 @@ class CNN:
 
         conv3 = tf.keras.layers.Conv2D(32, (3,3), padding='VALID', activation='relu', name='Conv3')(drop2)
         pool3 = tf.keras.layers.MaxPooling2D((2,2), padding='SAME', name='Pool3')(conv3)
-
         conv4 = tf.keras.layers.Conv2D(64, (5,5), padding='SAME', activation='relu', name='Conv4')(pool3)
 
         # fully-connected layers
         flat = tf.keras.layers.Flatten(name='Flat')(conv4)
         fc1 = tf.keras.layers.Dense(32, name='FC1')(flat)
         drop3 = tf.keras.layers.Dropout(dropout3, name='Drop3')(fc1)
-
         output = tf.keras.layers.Dense(32, activation='softmax', name='Output')(drop3)
 
         # build model
-        self.model = tf.keras.Model(inputs=input, outputs=output)
+        return tf.keras.Model(inputs=input, outputs=output)
 
     def compile(self):
         opt = tf.keras.optimizers.Adam(lr=0.0001)
@@ -49,15 +66,98 @@ class CNN:
         print(self.model.summary())
         tf.keras.utils.plot_model(self.model, 'CNN.png')
 
-    def fit(self):
-        return 0
+    def fit(self, train, val, max_epochs=None, batch_size=512, early_stopping=0, save_model=False):
+        outpath = os.path.join(self.outpath, 'cnn_model/')
+        if os.path.isdir(outpath):
+            shutil.rmtree(outpath)
+        os.makedirs(outpath, exist_ok=True)
+        os.mkdir(os.path.join(outpath, 'model_weights/'))
+
+        if max_epochs is None:
+            max_epochs = 500
+        self.epcohs = 0
+        train_n = len(train)
+        val_n = len(val)
+        decreasing = 0
+        tloss = []
+        tacc = []
+        vloss = []
+        vacc = []
+        stop = False
+
+        # iterate through every epoch
+        while not stop:
+            sys.stderr.flush()
+            print('Epoch: %i' % self.epochs)
+            print('Training:')
+            shuffle(train)
+            for i in tqdm(range(0, train_n, batch_size)):
+                batch_paths = train[i:i + batch_size]
+                if i + batch_size >= train_n:
+                    batch_paths = train[i:]
+                x, y = data.load_batch(batch_paths, len(batch_paths))
+                metrics = self.train_on_batch(x, y, return_dict=True)
+                tloss.append(metrics['loss'])
+                tacc.append(metrics['acc'])
+                del x, y
+                sys.stderr.flush()
+            # print metrics
+            avg_loss = sum(self.train_loss) / len(self.train_loss)
+            avg_acc = sum(self.train_acc) / len(self.train_acc)
+            self.train_loss.append(avg_loss)
+            self.train_acc.append(avg_acc)
+            print('\nTrain Loss: %f       Train Accuracy: %f' % (avg_loss, avg_acc))
+
+            print('Validation:')
+            shuffle(val)
+            # test on val for each epoch
+            for i in tqdm(range(0, val_n, batch_size)):
+                batch_paths = val[i:i + batch_size]
+                if i + batch_size >= val_n:
+                    batch_paths = val[i:]
+                x, y = data.load_batch(batch_paths, len(batch_paths))
+                metrics = self.model.test_on_batch(x, y, return_dict=True)
+                vloss.append(metrics['loss'])
+                vacc.append(metrics['acc'])
+                del x, y
+                sys.stderr.flush()
+            # print metrics
+            avg_loss = sum(self.val_loss) / len(self.val_loss)
+            avg_acc = sum(self.val_acc) / len(self.val_acc)
+            self.val_loss.append(avg_loss)
+            self.val_acc.append(avg_acc)
+            print('Validation Loss: %f       Validation Accuracy: %f' % (avg_loss, avg_acc))
+
+            # check stopping criteria
+            if early_stopping > 0:
+                if self.epochs >= max_epochs-1:
+                    # save model and print metrics
+                    stop = True
+                elif len(self.val_loss) >= early_stopping:
+                    if self.val_loss[-1] > self.val_loss[-2]:
+                        if decreasing >= early_stopping:
+                            # save model and print metrics
+                            stop = True
+                        else:
+                            decreasing += 1
+                    else:
+                        decreasing = 0
+            self.model.save_weights(os.path.join(outpath, 'weights/', str(self.epcohs) + '.ckpt'))
+            self.epochs += 1
+
+        if save_model:
+            self.model.save(os.path.join(outpath, 'model'))
 
     def train_on_batch(self, x, y, class_weight=None, return_dict=False):
         dict = self.model.train_on_batch(
             x, y, class_weight=class_weight, return_dict=return_dict
         )
-        print('Loss: %f     Accuracy: %f' % (dict['loss'], dict['acc']))
-        print('Recall: ')
+        return dict
+
+    def test_on_batch(self, x, y, return_dict=False):
+        dict = self.model.test_on_batch(
+            x, y, return_dict=return_dict
+        )
         return dict
 
     def save(self, outpath):
@@ -67,3 +167,29 @@ class CNN:
     def save_weights(self, outpath):
         outpath = os.path.join(outpath, 'model_weights')
         self.model.save_weights(outpath, overwrite=True)
+
+    def plot_accuracy(self, outpath=None):
+        if outpath is None:
+            outpath = self.outpath
+        outpath = os.path.join(outpath, 'cnn_accuracy.png')
+        x = list(range(self.epochs))
+        plt.plot(x, self.train_acc)
+        plt.plot(x, self.val_acc)
+        plt.title('CNN Accuracy')
+        plt.savefig(outpath)
+        plt.clf()
+        plt.close()
+
+    def plot_loss(self, outpath=None):
+        if outpath is None:
+            outpath = self.outpath
+        outpath = os.path.join(outpath, 'cnn_loss.png')
+        x = list(range(self.epcohs))
+        plt.plot(x, self.train_loss)
+        plt.plot(x, self.val_loss)
+        plt.title('CNN Categorical Cross-Entropy Loss')
+        plt.savefig(outpath)
+        plt.clf()
+        plt.close()
+
+

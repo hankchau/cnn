@@ -4,10 +4,8 @@ import time
 
 class ParkingLotDataset(tf.data.Dataset):
     def _generator(self, datapaths, num_samples):
-        #Read data from memory
-        for i in range(num_samples):
-
-            datapaths[i]
+        # Read data from memory
+        return 0
 
     def __new__(cls, datapaths, num_samples=30000):
         return tf.data.Dataset.from_generator(

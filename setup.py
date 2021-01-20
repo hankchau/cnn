@@ -8,6 +8,7 @@ setup(
         'numpy==1.19.4',
         'matplotlib==3.3.3',
         'pillow==8.0.1',
-        'tensorflow==2.4.0'
+        'tensorflow==2.4.0',
+        'tqdm==4.56.0'
     ],
 )

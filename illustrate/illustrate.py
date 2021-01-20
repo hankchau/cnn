@@ -121,7 +121,3 @@ def plot_ROIs(hm_files, outpaths):
             im = im.resize((256, 64))
             im.close()
         gc.collect()
-
-
-def plot_accuracy():
-    return 0

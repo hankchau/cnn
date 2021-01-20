@@ -134,7 +134,16 @@ def generate_ROIs(hmpath, outpath):
     illustrate.plot_ROIs(fpaths, outpaths)
 
 
-def load_training_batch(fpaths, step, batch_size, save_dir=None):
+def split(fpaths, dist):
+    n = len(fpaths)
+    train = fpaths[:int(n * dist['train'])]
+    test = fpaths[-int(n * dist['test']):]
+    val = fpaths[len(train):-len(test)]
+
+    return train, val, test
+
+
+def load_batch(fpaths, batch_size, save_dir=None):
     # find all possible label states
     labels = []
     bins = itertools.product('01', repeat=5)
@@ -153,13 +162,5 @@ def load_training_batch(fpaths, step, batch_size, save_dir=None):
         label = [0] * len(labels)
         label[id] = 1
         y[i,:] = label
-
-    if save_dir:
-        if not os.path.isdir(save_dir):
-            print('error: no such directory')
-            exit(0)
-        np.save(os.path.join(save_dir, 'x_train' + str(step)), x)
-        np.save(os.path.join(save_dir, 'y_train' + str(step)), y)
-        print('training data matrices saved in \'saved_files/\'')
 
     return x, y
