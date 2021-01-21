@@ -193,6 +193,7 @@ class CNN:
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.title('CNN Categorical Cross-Entropy Loss')
+        plt.legend(loc='upper right')
         plt.savefig(outpath)
         plt.clf()
         plt.close()
