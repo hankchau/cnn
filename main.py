@@ -34,7 +34,7 @@ def main():
     # Train
     fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
     dist = {'train': 0.8, 'val': 0.2}
-    train, val, test = data.split(fpaths, dist)
+    train, val = data.split(fpaths, dist)
     model.fit(train, val)
     model.plot_accuracy()
     model.plot_loss()
