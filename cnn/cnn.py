@@ -75,7 +75,7 @@ class CNN:
 
         if max_epochs is None:
             max_epochs = 500
-        self.epcohs = 0
+        self.epochs = 0
         train_n = len(train)
         val_n = len(val)
         decreasing = 0
@@ -141,7 +141,7 @@ class CNN:
                     else:
                         decreasing = 0
             # save if model improves
-            if self.epcohs >= 1 and self.val_loss[-1] < self.val_loss[-2]:
+            if self.epochs >= 1 and self.val_loss[-1] < self.val_loss[-2]:
                 self.model.save_weights(os.path.join(outpath, 'model_weights/'))
             self.epochs += 1
 
@@ -187,7 +187,7 @@ class CNN:
         if outpath is None:
             outpath = self.outpath
         outpath = os.path.join(outpath, 'cnn_loss.png')
-        x = list(range(self.epcohs))
+        x = list(range(self.epochs))
         plt.plot(x, self.train_loss, '-b', label='train')
         plt.plot(x, self.val_loss, '-r', label='validation')
         plt.xlabel('Epochs')
