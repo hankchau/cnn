@@ -136,11 +136,11 @@ def generate_ROIs(hmpath, outpath):
 
 def split(fpaths, dist):
     n = len(fpaths)
-    train = fpaths[:int(n * dist['train'])]
-    test = fpaths[-int(n * dist['test']):]
-    val = fpaths[len(train):-len(test)]
+    id = int(n * dist['train'])
+    train = fpaths[:id]
+    val = fpaths[id:]
 
-    return train, val, test
+    return train, val
 
 
 def load_batch(fpaths, batch_size, save_dir=None):
