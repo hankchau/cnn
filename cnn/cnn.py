@@ -142,7 +142,7 @@ class CNN:
                         decreasing = 0
             # save if model improves
             if self.epochs >= 1 and self.val_loss[-1] < self.val_loss[-2]:
-                self.model.save_weights(os.path.join(outpath, 'model_weights/'))
+                self.model.save_weights(os.path.join(outpath, 'model_weights/', 'weights_'+str(self.epochs)))
             self.epochs += 1
 
         if save_model:
