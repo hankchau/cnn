@@ -102,8 +102,8 @@ class CNN:
                 del x, y
                 sys.stderr.flush()
             # print metrics
-            avg_loss = sum(self.train_loss) / len(self.train_loss)
-            avg_acc = sum(self.train_acc) / len(self.train_acc)
+            avg_loss = sum(tloss) / len(tloss)
+            avg_acc = sum(tacc) / len(tacc)
             self.train_loss.append(avg_loss)
             self.train_acc.append(avg_acc)
             print('\nTrain Loss: %f       Train Accuracy: %f' % (avg_loss, avg_acc))
@@ -122,8 +122,8 @@ class CNN:
                 del x, y
                 sys.stderr.flush()
             # print metrics
-            avg_loss = sum(self.val_loss) / len(self.val_loss)
-            avg_acc = sum(self.val_acc) / len(self.val_acc)
+            avg_loss = sum(vloss) / len(vloss)
+            avg_acc = sum(vacc) / len(vacc)
             self.val_loss.append(avg_loss)
             self.val_acc.append(avg_acc)
             print('Validation Loss: %f       Validation Accuracy: %f' % (avg_loss, avg_acc))
@@ -131,18 +131,18 @@ class CNN:
             # check stopping criteria
             if early_stopping > 0:
                 if self.epochs >= max_epochs-1:
-                    # save model and print metrics
                     stop = True
                 elif len(self.val_loss) >= early_stopping:
                     if self.val_loss[-1] > self.val_loss[-2]:
                         if decreasing >= early_stopping:
-                            # save model and print metrics
                             stop = True
                         else:
                             decreasing += 1
                     else:
                         decreasing = 0
-            self.model.save_weights(os.path.join(outpath, 'weights/', str(self.epcohs) + '.ckpt'))
+            # save if model improves
+            if self.val_loss[-1] < self.val_loss[-2]:
+                self.model.save_weights(os.path.join(outpath, 'model_weights/'))
             self.epochs += 1
 
         if save_model:
