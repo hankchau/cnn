@@ -74,7 +74,7 @@ class CNN:
         os.mkdir(os.path.join(outpath, 'model_weights/'))
 
         if max_epochs is None:
-            max_epochs = 500
+            max_epochs = 100
         self.epochs = 0
         train_n = len(train)
         val_n = len(val)
@@ -129,10 +129,10 @@ class CNN:
             print('Validation Loss: %f       Validation Accuracy: %f' % (avg_loss, avg_acc))
 
             # check stopping criteria
+            if self.epochs >= max_epochs - 1:
+                stop = True
             if early_stopping > 0:
-                if self.epochs >= max_epochs-1:
-                    stop = True
-                elif len(self.val_loss) >= early_stopping:
+                if len(self.val_loss) >= early_stopping:
                     if self.val_loss[-1] > self.val_loss[-2]:
                         if decreasing >= early_stopping:
                             stop = True
