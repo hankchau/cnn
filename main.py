@@ -2,7 +2,6 @@ import data
 import os
 import glob
 import cnn
-from random import shuffle
 import tensorflow as tf
 
 

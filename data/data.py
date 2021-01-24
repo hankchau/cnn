@@ -5,6 +5,7 @@ import illustrate
 import itertools
 import glob
 import data.data_utils as du
+from random import shuffle
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
@@ -135,6 +136,7 @@ def generate_ROIs(hmpath, outpath):
 
 
 def split(fpaths, dist):
+    shuffle(fpaths)
     n = len(fpaths)
     id = int(n * dist['train'])
     train = fpaths[:id]

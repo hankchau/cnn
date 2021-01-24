@@ -100,8 +100,8 @@ class CNN:
                 tloss.append(metrics['loss'])
                 tacc.append(metrics['acc'])
                 del x, y
-                sys.stderr.flush()
             # print metrics
+            sys.stderr.flush()
             avg_loss = sum(tloss) / len(tloss)
             avg_acc = sum(tacc) / len(tacc)
             self.train_loss.append(avg_loss)
@@ -109,7 +109,6 @@ class CNN:
             print('\nTrain Loss: %f       Train Accuracy: %f' % (avg_loss, avg_acc))
 
             print('Validation:')
-            shuffle(val)
             # test on val for each epoch
             for i in tqdm(range(0, val_n, batch_size)):
                 batch_paths = val[i:i + batch_size]
@@ -120,8 +119,8 @@ class CNN:
                 vloss.append(metrics['loss'])
                 vacc.append(metrics['acc'])
                 del x, y
-                sys.stderr.flush()
             # print metrics
+            sys.stderr.flush()
             avg_loss = sum(vloss) / len(vloss)
             avg_acc = sum(vacc) / len(vacc)
             self.val_loss.append(avg_loss)
