@@ -74,7 +74,7 @@ class CNN:
         os.mkdir(os.path.join(outpath, 'model_weights/'))
 
         if max_epochs is None:
-            max_epochs = 100
+            max_epochs = 300
         self.epochs = 0
         train_n = len(train)
         val_n = len(val)
