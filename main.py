@@ -29,9 +29,9 @@ def main():
     # model.visualize()
     # model.compile()
 
-    fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
-    dist = {'train': 0.8, 'val': 0.2}
-    train, val = data.split(fpaths, dist)
+    # fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
+    # dist = {'train': 0.8, 'val': 0.2}
+    # train, val = data.split(fpaths, dist)
     # model.fit(train, val, save_model=True)
     # model.plot_accuracy()
     # model.plot_loss()
