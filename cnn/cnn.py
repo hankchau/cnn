@@ -64,7 +64,6 @@ class CNN:
 
     def visualize(self):
         print(self.model.summary())
-        tf.keras.utils.plot_model(self.model, 'CNN.png')
 
     def fit(self, train, val, max_epochs=None, batch_size=512, early_stopping=0, save_model=False):
         outpath = os.path.join(self.outpath, 'cnn_model/')
@@ -101,7 +100,6 @@ class CNN:
                 tacc.append(metrics['acc'])
                 del x, y
             # print metrics
-            sys.stderr.flush()
             avg_loss = sum(tloss) / len(tloss)
             avg_acc = sum(tacc) / len(tacc)
             self.train_loss.append(avg_loss)
@@ -120,7 +118,6 @@ class CNN:
                 vacc.append(metrics['acc'])
                 del x, y
             # print metrics
-            sys.stderr.flush()
             avg_loss = sum(vloss) / len(vloss)
             avg_acc = sum(vacc) / len(vacc)
             self.val_loss.append(avg_loss)
@@ -195,5 +192,3 @@ class CNN:
         plt.savefig(outpath)
         plt.clf()
         plt.close()
-
-

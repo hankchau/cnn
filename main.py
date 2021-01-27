@@ -24,20 +24,25 @@ def main():
     roi_dir = os.path.join(outpath, 'ROIs')
     # data.generate_ROIs(hm_dir, roi_dir)
 
-
-    # build CNN
-    model = cnn.CNN(outpath='saved_files/')
+    # Training
+    # model = cnn.CNN(outpath='saved_files/')
     # model.visualize()
-    model.compile()
+    # model.compile()
 
-    # Train
     fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
     dist = {'train': 0.8, 'val': 0.2}
     train, val = data.split(fpaths, dist)
-    model.fit(train, val, save_model=True)
-    model.plot_accuracy()
-    model.plot_loss()
-    # model.predict(test)
+    # model.fit(train, val, save_model=True)
+    # model.plot_accuracy()
+    # model.plot_loss()
+
+    # convert to tf-lite model
+    saved_model = 'saved_files/cnn_model/model'
+    outpath = 'saved_files/cnn_model/cnn.tflite'
+    converter = tf.lite.TFLiteConverter.from_saved_model(saved_model)
+    tflite_model = converter.convert()
+    with open(outpath, 'wb') as f:
+        f.write(tflite_model)
 
 
 if __name__ == '__main__':
