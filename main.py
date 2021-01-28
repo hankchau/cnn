@@ -25,16 +25,16 @@ def main():
     # data.generate_ROIs(hm_dir, roi_dir)
 
     # Training
-    # model = cnn.CNN(outpath='saved_files/')
+    model = cnn.CNN(outpath='saved_files/')
     # model.visualize()
-    # model.compile()
+    model.compile()
 
-    # fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
-    # dist = {'train': 0.8, 'val': 0.2}
-    # train, val = data.split(fpaths, dist)
-    # model.fit(train, val, save_model=True)
-    # model.plot_accuracy()
-    # model.plot_loss()
+    fpaths = glob.glob(os.path.join(roi_dir, '**/**/*.png'), recursive=True)
+    dist = {'train': 0.8, 'val': 0.2}
+    train, val = data.split(fpaths, dist)
+    model.fit(train, val, save_model=True)
+    model.plot_accuracy()
+    model.plot_loss()
 
     # convert to tf-lite model
     saved_model = 'saved_files/cnn_model/model'

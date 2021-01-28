@@ -105,7 +105,7 @@ def save_csv(link, content, outpath):
 def read_image(fpath):
     with Image.open(fpath) as im:
         im.convert('RGB')
-        im = im.resize((86,256))
+        im = im.resize((256,86))
         mat = np.array(im)
 
     return mat

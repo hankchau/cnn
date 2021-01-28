@@ -30,7 +30,7 @@ class CNN:
 
     def build_model(self):
         print('building CNN model ...')
-        input = tf.keras.Input((256,86,3), batch_size=512, name='Input')
+        input = tf.keras.Input((86,256,3), batch_size=512, name='Input')
 
         # convolutional layers
         conv1 = tf.keras.layers.Conv2D(16, (3,3), padding='VALID', activation='relu', name='Conv1')(input)
