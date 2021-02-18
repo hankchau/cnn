@@ -78,6 +78,8 @@ def plot_heatmaps(csv_files, outpaths, shading='gouraud', cmap='rainbow', roi_bo
     fig.suptitle('Range Azimuth Heatmap (-60\N{DEGREE SIGN}, 60\N{DEGREE SIGN})')
 
     for i in range(len(csv_files)):
+        if outpaths[i] == '':
+            continue
         ax.set_xlabel('Azimuth [m]')
         ax.set_ylabel('Range [m]')
         ax.set_xlim([-range_width - 0.5, range_width + 0.5])
@@ -112,6 +114,8 @@ def plot_heatmaps(csv_files, outpaths, shading='gouraud', cmap='rainbow', roi_bo
 
 def plot_ROIs(hm_files, outpaths):
     for i in range(len(hm_files)):
+        if outpaths[i] == '':
+            continue
         with Image.open(hm_files[i]) as im:
             im = im.convert('RGB')
             top, bot = 73, 154

@@ -2,12 +2,18 @@ import os
 import numpy as np
 import requests
 import data
+import datetime
 from PIL import Image
 from bs4 import BeautifulSoup
 
 
 def get_labels(fname):
     return fname[fname.rfind('_')+1:fname.rfind('.')]
+
+
+def get_datetime(date):
+    list = date.split('-')
+    return datetime.datetime(int(list[0]), int(list[1]), int(list[2]))
 
 
 def get_transform_index():
@@ -53,53 +59,66 @@ def fill_data_index(fpath):
         )
 
 
-def get_links(addr, host='http://crs.comm.yzu.edu.tw:8888'):
-    r = requests.get(addr)
+def download_data(host, area, outpath, start_date):
+    if not os.path.isdir(outpath):
+        print('Error: Please mount Transcend USB before trying again!')
+        exit(0)
+    os.makedirs(outpath, exist_ok=True)
+
+    d1 = None
+    if not start_date is None:
+        d1 = get_datetime(start_date)
+
+    r = None
+    while r is None or r.status_code != 200:
+        try:
+            r = requests.get(host + area, timeout=10)
+        except requests.exceptions.RequestException:
+            print('Failed to Connect. Retrying ...')
+            continue
     soup = BeautifulSoup(r.text, 'html.parser')
-    link_tags = soup.find_all('a', href=True)
-    link_tags.pop(0), link_tags.pop(-1)     # remove '../' and 'estatic' hrefs
+    date_tags = soup.find_all('a', href=True)
+    date_tags.pop(0), date_tags.pop(-1)     # remove '../' and 'estatic' hrefs
 
-    links = []
-    for tag in link_tags:
-        links.append(host + tag['href'])
+    for date in date_tags:
+        if not date.text[-1] == '/':
+            continue
+        d2 = date.text.rstrip('/')
+        d2 = get_datetime(d2)
+        if d1 and d2 < d1:
+            continue
 
-    return links
+        datepath = os.path.join(outpath, date['href'].strip('/'))
+        if not os.path.isdir(datepath):
+            os.makedirs(datepath, exist_ok=True)
+        r = None
+        while r is None or r.status_code != 200:
+            try:
+                r = requests.get(host + date['href'], timeout=5)
+            except requests.exceptions.RequestException:
+                print('Failed to Connect. Retrying ...')
+                continue
+        soup = BeautifulSoup(r.text, 'html.parser')
+        jpg_tags = soup.find_all('a', href=True)
+        jpg_tags.pop(0), jpg_tags.pop(-1)       # remove '../' and 'estatic' hrefs
 
-
-def get_csv(csv_links, outpath):
-    # get all data in each date
-    paths = []
-    with requests.Session() as sess:
-        for l in csv_links:
-            r = sess.get(l)
-            path = save_csv(l, r.content, outpath)
-            if path:
-                paths.append(path)
-
-    return paths
+        for jpg in jpg_tags:
+            url = jpg['href']
+            if '.csv' in url:
+                req = None
+                while req is None or r.status_code != 200:
+                    try:
+                        req = requests.get(host + url, timeout=5)
+                    except requests.exceptions.RequestException:
+                        print('Failed to Connect. Retrying ...')
+                        continue
+                fpath = os.path.join(outpath, url.strip('/'))
+                with open(fpath, 'wb') as f:
+                    f.write(req.content)
 
 
 def read_csv(fpath):
     return np.genfromtxt(fpath, delimiter=',')
-
-
-def save_csv(link, content, outpath):
-    id = link.rfind('/')
-    fname = link[id+1:]
-    if len(fname) < 13:
-        return None
-
-    date = link[:id]
-    date = date[-10:]
-    fpath = os.path.join(outpath, date)
-    if not os.path.isdir(fpath):
-        os.mkdir(fpath)
-
-    fpath = os.path.join(fpath, fname)
-    with open(fpath, 'wb') as csv_file:
-        csv_file.write(content)
-
-    return fpath
 
 
 def read_image(fpath):

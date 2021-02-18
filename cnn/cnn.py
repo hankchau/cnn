@@ -65,7 +65,8 @@ class CNN:
     def visualize(self):
         print(self.model.summary())
 
-    def fit(self, train, val, max_epochs=None, batch_size=512, early_stopping=0, save_model=False):
+    def fit(self, train, val, max_epochs=None, batch_size=512,
+            class_weights=None, early_stopping=0, save_model=False):
         outpath = os.path.join(self.outpath, 'cnn_model/')
         if os.path.isdir(outpath):
             shutil.rmtree(outpath)
@@ -95,7 +96,9 @@ class CNN:
                 if i + batch_size >= train_n:
                     batch_paths = train[i:]
                 x, y = data.load_batch(batch_paths, len(batch_paths))
-                metrics = self.train_on_batch(x, y, return_dict=True)
+                metrics = self.train_on_batch(
+                    x, y, class_weight=class_weights, return_dict=True
+                )
                 tloss.append(metrics['loss'])
                 tacc.append(metrics['acc'])
                 del x, y

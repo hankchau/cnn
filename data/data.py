@@ -1,66 +1,19 @@
 import os
 import numpy as np
-import shutil
 import illustrate
 import itertools
 import glob
+import datetime
 import data.data_utils as du
 from random import shuffle
-import tensorflow as tf
-from matplotlib import pyplot as plt
 
 
-def get_data(host, dpath):
-    # remove current data
-    if os.path.isdir(dpath):
-        shutil.rmtree(dpath)
-    os.mkdir(dpath)
-
-    all_data_paths = []     # list of all csv paths
-
-    print('scraping data from host ' + host)
+def get_data(addr, area, outpath, start_date=None):
+    os.makedirs(outpath, exist_ok=True)
+    print('scraping data from host ' + addr)
     print('this will take a few hours ...')
-    # Basement
-    addr = host + '/Basement/'
-    outpath = os.path.join(dpath + 'Basement/')
-    os.mkdir(outpath)
-    paths = download_data(addr, outpath)
-    all_data_paths.extend(paths)
-    print('finished with the Basement data')
-
-    # OffRoad
-    # addr = host + '/OffRoad/'
-    # outpath = os.path.join(dpath + 'OffRoad/')
-    # os.mkdir(outpath)
-    # paths = download_data(addr, outpath)
-    # all_data_paths.extend(paths)
-    # print('finished with the OffRoad data')
-
-    # ParaParking
-    # addr = host + '/ParaParking/'
-    # outpath = os.path.join(dpath + 'ParaParking/')
-    # os.mkdir(outpath)
-    # paths = download_data(addr, outpath)
-    # all_data_paths.extend(paths)
-    # print('finished with the ParaParking data')
-
-    # save all output paths
-    with open('csv_paths.txt', 'w') as file:
-        for p in all_data_paths:
-            file.write(p)
-    print('all data file paths stored in csv_paths.txt')
-
-
-def download_data(addr, outpath):
-    date_links = du.get_links(addr)
-
-    paths = []
-    for dl in date_links:
-        csv_links = du.get_links(dl)
-        path = du.get_csv(csv_links, outpath)
-        paths.extend(path)
-
-    return paths
+    du.download_data(addr, area, outpath, start_date)
+    print('finished with scraping data')
 
 
 def find_average(file_pattern):
@@ -77,36 +30,54 @@ def find_average(file_pattern):
     return mat / num
 
 
-def find_label_distr(outpath):
+def find_label_distr(fpath, outpath=None):
+    if outpath is None:
+        outpath = os.getcwd()
     if not os.path.isdir(outpath):
-        os.mkdir(outpath)
+        os.makedirs(outpath, exist_ok=True)
     outpath = os.path.join(outpath, 'label_distributions.txt')
     # find all possible label states
     labels = []
-    bins = itertools.product('01', repeat=6)
+    bins = itertools.product('01', repeat=5)
     for b in bins:
         labels.append(''.join(b))
 
+    total = 0
+    class_weights = {}
     with open(outpath, 'w+') as f:
         f.write('label  : frequency\n')
+        for i in range(len(labels)):
+            fpattern =  os.path.join(fpath, '**/*_' + labels[i] + '*.csv')
+            ls = glob.glob(fpattern)
+            f.write(labels[i] + ' : %i\n' % len(ls))
+            total += len(ls)
+            class_weights[i] = len(ls)
+    for c in class_weights:
+        class_weights[c] = total / (32 * class_weights[c])
 
-        for l in labels:
-            ls = glob.glob('csv_data/**/**/*_' + l + '.csv')
-            f.write(l + ' : %i\n' % len(ls))
+    return class_weights
 
 
-def generate_heatmaps(csvpath, outpath):
-    if os.path.isdir(outpath):
-        shutil.rmtree(outpath)
+def generate_heatmaps(csvpath, outpath, start_date=None):
     os.makedirs(outpath, exist_ok=True)
 
-    fpaths = glob.glob(os.path.join(csvpath, '**/**/*.csv'), recursive=True)
+    fpaths = glob.glob(os.path.join(csvpath, '**/*.csv'), recursive=True)
     outpaths = []
+    d1 = None
+    if not start_date is None:
+        d1 = du.get_datetime(start_date)
     for f in fpaths:
         id = f.rfind('/')
+        date = f[:id]
+        date = date[date.rfind('/')+1:]
+        d2 = du.get_datetime(date)
+        if d1 and d1 > d2:
+            outpaths.append('')
+            continue
+
         fname = f[id+1:f.rfind('.')]
         fname += '.png'
-        fdir = os.path.join(outpath, f[f.find('/')+1:id])
+        fdir = os.path.join(outpath, date)
         if not os.path.isdir(fdir):
             os.makedirs(fdir, exist_ok=True)
 
@@ -115,18 +86,27 @@ def generate_heatmaps(csvpath, outpath):
     illustrate.plot_heatmaps(fpaths, outpaths, roi_boxes=False)
 
 
-def generate_ROIs(hmpath, outpath):
-    if os.path.isdir(outpath):
-        shutil.rmtree(outpath)
+def generate_ROIs(hmpath, outpath, start_date=None):
     os.makedirs(outpath, exist_ok=True)
 
-    fpaths = glob.glob(os.path.join(hmpath, '**/**/*.png'), recursive=True)
+    fpaths = glob.glob(os.path.join(hmpath, '**/*.png'), recursive=True)
     outpaths = []
+
+    d1 = None
+    if not start_date is None:
+        d1 = du.get_datetime(start_date)
     for f in fpaths:
         f = f.strip(hmpath)
         id = f.rfind('/')
+        date = f[:id]
+        date = date[date.rfind('/')+1:]
+        d2 = du.get_datetime(date)
+        if d1 and d1 > d2:
+            outpaths.append('')
+            continue
+
         fname = f[id+1:]
-        fdir = os.path.join(outpath, f[:id])
+        fdir = os.path.join(outpath, date)
         if not os.path.isdir(fdir):
             os.makedirs(fdir, exist_ok=True)
 
